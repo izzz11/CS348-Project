@@ -1,3 +1,7 @@
+-- WRITE MORE SCRIPTS FOR QUERY & INSERT & OTHER OPERATIONS
+-- This script creates the necessary tables for the music streaming application, should be inserted into the ".db"  file
+-- TODO: we will be using SQLite
+
 CREATE TABLE users (
     uid VARCHAR(20) PRIMARY KEY,
     username VARCHAR(50),
