@@ -1,1 +1,0 @@
-<!-- REPLACE THIS WITH vite create-next-app or something -->
