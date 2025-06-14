@@ -1,0 +1,14 @@
+/* Color Palette Reference - Use with Tailwind classes */
+:root {
+    /* Primary Colors */
+    --blue-primary: #3B82F6;
+    --blue-dark: #2563EB;
+    --purple-primary: #8B5CF6;
+    --purple-dark: #7C3AED;
+    --pink-primary: #EC4899;
+    
+    /* Custom brand colors (if needed beyond Tailwind) */
+    --brand-gradient: linear-gradient(to right, #3B82F6, #8B5CF6, #EC4899);
+    --surface-glass: rgba(255, 255, 255, 0.7);
+    --surface-glass-hover: rgba(255, 255, 255, 0.9);
+  }

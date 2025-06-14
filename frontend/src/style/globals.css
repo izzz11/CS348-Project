@@ -1,0 +1,13 @@
+/* globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import './colors.css';
+
+/* Only add custom utilities here if Tailwind doesn't cover them */
+.glass-effect {
+  background: var(--surface-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+}
