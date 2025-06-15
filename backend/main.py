@@ -1,11 +1,11 @@
 # main.py
 from fastapi import FastAPI
-import models
-from db import engine
-from routers import users
+from api import users
 
-# create tables
-models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-app.include_router(users.router, prefix="/users", tags=["users"])
+app.include_router(users.router)
+
+@app.get("/test")
+def read_root():
+    return {"message": "Welcome to the FastAPI application!"}
