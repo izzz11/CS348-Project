@@ -14,15 +14,26 @@ engine = create_engine(
 )
 
 
-def run(sql: str, params: dict = None, fetch: bool = False):
+from sqlalchemy import text
+from database.db import engine  # 假设你是从这里导入的
+
+def run(sql: str, params: dict = None, fetch: bool = False, fetchone: bool = False):
     with engine.begin() as conn:
         result = conn.execute(text(sql), params or {})
-        if fetch:
+
+        if fetchone:
+            row = result.fetchone()
+            result.close()
+            return row
+
+        elif fetch:
             rows = result.fetchall()
             result.close()
             return rows
+
         else:
             result.close()
+
 
 
 

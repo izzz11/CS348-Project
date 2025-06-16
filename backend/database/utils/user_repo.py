@@ -22,8 +22,8 @@ def get_by_username(username: str):
 def create_user(username: str, password: str):
     import uuid
 
-    uid = str(uuid.uuid4())  # Generate a unique user ID
-    print(uid)
+    uid = str(uuid.uuid4())
+
     sql = """
     INSERT INTO users (uid, username, password)
     VALUES (:uid, :username, :password)
@@ -31,11 +31,12 @@ def create_user(username: str, password: str):
     """
 
     params = {
-        "uid": uid,  # Python variable `uid` passed safely
+        "uid": uid,
         "username": username,
         "password": password
     }
 
-    result = run(sql, params, fetch=True)
-    return result
+    row = run(sql, params, fetchone=True)
+    return row
+
 
