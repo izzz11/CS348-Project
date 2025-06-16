@@ -23,7 +23,14 @@ export default function Login() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
+  
       if (res.status === 200) {
+        const data = await res.json();
+  
+        // ✅ Store user info in localStorage
+        localStorage.setItem('uid', data.uid);
+        localStorage.setItem('username', data.username);
+  
         setSuccess('Login successful! Redirecting...');
         setTimeout(() => router.push('/'), 1200);
       } else {
@@ -36,6 +43,7 @@ export default function Login() {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black text-white">

@@ -56,7 +56,12 @@ export default function Home() {
           <div className="bg-gray-800/80 p-8 rounded-2xl hover:bg-gray-700/90 transition-all duration-300 flex flex-col items-center shadow-lg">
             <FaPlay className="text-5xl text-purple-400 mb-4" />
             <h3 className="text-2xl font-semibold mb-2">Create Playlists</h3>
-            <p className="text-gray-300">Build and share your perfect playlists with friends</p>
+            <p className="text-gray-300 mb-4">Build and share your perfect playlists with friends</p>
+            <Link href="/playlists">
+              <button className="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg transition-colors">
+                My Playlists
+              </button>
+            </Link>
           </div>
         </section>
 
