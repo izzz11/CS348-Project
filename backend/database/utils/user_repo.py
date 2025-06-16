@@ -6,6 +6,7 @@ def get_all_users():
     FROM users
     """
     result = run(sql, fetch=True)
+    print("result", result)
     return result
 
 
@@ -47,4 +48,5 @@ def create_user(username: str, password: str):
     """
 
     row = run(sql_select, {"uid": uid}, fetchone=True)
+    print("rowwww ", row)
     return row

@@ -12,7 +12,7 @@ def fetch_all_users():
     
     if not rows:
         return []
-    return [{"uid": row.uid, "username": row.username} for row in rows]
+    return [{"uid": row['uid'], "username": row['username']} for row in rows]
 
 # register
 @router.post("/register", response_model=models.UserRead,
@@ -25,12 +25,13 @@ def register(u: models.UserCreate):
     # row is a SQLAlchemy Row: (id, uid, username, password)
 
     print(f"User created: {row}")
-    return {"uid": row.uid, "username": row.username}
+    return {"uid": row['uid'], "username": row['username']}
 
 # login
 @router.post("/login", response_model=models.UserRead)
 def login(u: models.UserLogin):
     row = user_repo.get_by_username(u.username)
-    if not row or row.password != u.password:
+    
+    if not row or row['password'] != u.password:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials")
-    return {"uid": row.uid, "username": row.username}
+    return {"uid": row['uid'], "username": row['username']}

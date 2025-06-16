@@ -45,3 +45,14 @@ class PlaylistUpdate(BaseModel):
     description: Optional[str] = None
     private: Optional[bool] = None
     shared_with: Optional[str] = None
+    
+
+class SongRead(BaseModel):
+    sid: str
+    name: str
+    genre: str
+    artist: str
+    year: int
+    language: str
+    duration: float
+    other_info: str

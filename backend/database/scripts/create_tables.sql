@@ -1,8 +1,10 @@
 -- CREATE TABLES IF THEY DO NOT EXIST
 -- Target: SQLite database for a music streaming application
 
+DROP TABLE IF EXISTS playlist_songs, listened, playlists, filepaths, songs, users;
+
 CREATE TABLE IF NOT EXISTS users (
-    uid VARCHAR(255) PRIMARY KEY,
+    uid VARCHAR(36) PRIMARY KEY,
     username VARCHAR(50),
     name VARCHAR(100) NULL,
     age INT NULL,
@@ -30,7 +32,7 @@ CREATE TABLE IF NOT EXISTS filepaths (
 );
 
 CREATE TABLE IF NOT EXISTS playlists (
-    pid VARCHAR(255) PRIMARY KEY,
+    pid VARCHAR(36) PRIMARY KEY,
     uid VARCHAR(36),
     name VARCHAR(100),
     description TEXT,
@@ -61,3 +63,9 @@ CREATE TABLE IF NOT EXISTS playlist_songs (
     FOREIGN KEY (pid) REFERENCES playlists(pid),
     FOREIGN KEY (sid) REFERENCES songs(sid)
 );
+
+ALTER TABLE users MODIFY uid VARCHAR(36);
+ALTER TABLE playlists MODIFY uid VARCHAR(36);
+ALTER TABLE playlists MODIFY pid VARCHAR(36);
+
+

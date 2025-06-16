@@ -1,74 +1,78 @@
-import { useState, FormEvent } from "react";
-import { useRouter } from "next/router";
+import Head from 'next/head';
+import Link from 'next/link';
+import { FaSignInAlt } from 'react-icons/fa';
+import { useState } from 'react';
+import { useRouter } from 'next/router';
 
-export default function LoginPage() {
+export default function Login() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
-  async function handleSubmit(e: FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-
-    const res = await fetch("http://localhost:8000/users/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    });
-
-    if (res.ok) {
-      const user = await res.json();
-      // e.g. save to localStorage for later
-      localStorage.setItem("uid", user.uid);
-      router.push("/");
-    } else {
-      const body = await res.json();
-      setError(body.detail || "Login failed");
+    setError('');
+    setSuccess('');
+    setLoading(true);
+    try {
+      const res = await fetch('http://localhost:8000/users/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      if (res.status === 200) {
+        setSuccess('Login successful! Redirecting...');
+        setTimeout(() => router.push('/'), 1200);
+      } else {
+        const data = await res.json();
+        setError(data.detail || 'Login failed');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-6 rounded shadow-md w-full max-w-sm"
-      >
-        <h1 className="text-2xl mb-4 text-center">Login</h1>
-
-        {error && (
-          <p className="text-red-600 text-sm mb-2">{error}</p>
-        )}
-
-        <label className="block mb-2">
-          <span className="block text-sm font-medium">Username</span>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black text-white">
+      <Head>
+        <title>Log In - Music App</title>
+      </Head>
+      <div className="bg-gray-800/90 p-10 rounded-2xl shadow-2xl w-full max-w-md flex flex-col items-center">
+        <FaSignInAlt className="text-4xl text-purple-400 mb-4" />
+        <h1 className="text-3xl font-bold mb-6">Welcome Back</h1>
+        <form className="w-full flex flex-col gap-4" onSubmit={handleSubmit}>
           <input
             type="text"
+            placeholder="Username"
             value={username}
             onChange={e => setUsername(e.target.value)}
+            className="px-4 py-3 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
             required
-            className="mt-1 block w-full border rounded px-3 py-2 focus:outline-none focus:ring"
           />
-        </label>
-
-        <label className="block mb-4">
-          <span className="block text-sm font-medium">Password</span>
           <input
             type="password"
+            placeholder="Password"
             value={password}
             onChange={e => setPassword(e.target.value)}
+            className="px-4 py-3 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
             required
-            className="mt-1 block w-full border rounded px-3 py-2 focus:outline-none focus:ring"
           />
-        </label>
-
-        <button
-          type="submit"
-          className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
-        >
-          Sign In
-        </button>
-      </form>
+          {error && <div className="text-red-400 text-center">{error}</div>}
+          {success && <div className="text-green-400 text-center">{success}</div>}
+          <button type="submit" className="mt-4 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg disabled:opacity-60" disabled={loading}>
+            {loading ? 'Logging In...' : 'Log In'}
+          </button>
+        </form>
+        <p className="mt-6 text-gray-400 text-sm">
+          Don't have an account?{' '}
+          <Link href="/signin" className="text-purple-400 hover:underline">Sign Up</Link>
+        </p>
+      </div>
     </div>
   );
-}
+} 

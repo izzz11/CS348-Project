@@ -16,22 +16,18 @@ engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=False)
 from sqlalchemy import text
 from database.db import engine  # 假设你是从这里导入的
 
-def run(sql: str, params: dict = None, fetch: bool = False, fetchone: bool = False):
+def run(sql: str, params: dict = None, fetch=False, fetchone=False):
     with engine.begin() as conn:
         result = conn.execute(text(sql), params or {})
-
         if fetchone:
             row = result.fetchone()
-            result.close()
-            return row
-
+            if row is None:
+                return None
+            return dict(zip(result.keys(), row))  # ✅ Fix here
         elif fetch:
             rows = result.fetchall()
-            result.close()
-            return rows
-
-        else:
-            result.close()
+            return [dict(zip(result.keys(), r)) for r in rows]  # ✅ Fix here
+        return None
 
 
 

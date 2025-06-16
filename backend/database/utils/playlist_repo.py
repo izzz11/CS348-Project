@@ -4,6 +4,14 @@ import uuid
 # 1️⃣ Create
 def create_playlist(uid: str, name: str, description: str = "", private: bool = False, shared_with: str = None):
     pid = str(uuid.uuid4())
+    
+     # ✅ Check if user exists before inserting playlist
+    user_check_sql = "SELECT uid FROM users WHERE uid = :uid"
+    user_exists = run(user_check_sql, {"uid": uid}, fetchone=True)
+    if not user_exists:
+        raise ValueError(f"User with uid '{uid}' does not exist.")
+
+
     sql_insert = """
     INSERT INTO playlists (pid, uid, name, description, private, shared_with)
     VALUES (:pid, :uid, :name, :description, :private, :shared_with)
