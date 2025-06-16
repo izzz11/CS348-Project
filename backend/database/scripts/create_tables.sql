@@ -24,14 +24,14 @@ CREATE TABLE IF NOT EXISTS songs (
 
 CREATE TABLE IF NOT EXISTS filepaths (
     id VARCHAR(255) PRIMARY KEY,
-    sid VARCHAR(20),
+    sid VARCHAR(36),
     filepath VARCHAR(255),
     FOREIGN KEY (sid) REFERENCES songs(sid)
 );
 
 CREATE TABLE IF NOT EXISTS playlists (
     pid VARCHAR(255) PRIMARY KEY,
-    uid VARCHAR(20),
+    uid VARCHAR(36),
     name VARCHAR(100),
     description TEXT,
     private BOOLEAN DEFAULT FALSE,
@@ -42,12 +42,12 @@ CREATE TABLE IF NOT EXISTS playlists (
 CREATE TABLE IF NOT EXISTS listened (
     id VARCHAR(255) PRIMARY KEY,
     last_listened TIMESTAMP,
-    uid VARCHAR(20),
+    uid VARCHAR(36),
     total_plays INT,
     favourite BOOLEAN,
     rating INT,
-    pid VARCHAR(20),
-    sid VARCHAR(20),
+    pid VARCHAR(36),
+    sid VARCHAR(36),
     FOREIGN KEY (uid) REFERENCES users(uid),
     FOREIGN KEY (pid) REFERENCES playlists(pid),
     FOREIGN KEY (sid) REFERENCES songs(sid)
@@ -55,8 +55,8 @@ CREATE TABLE IF NOT EXISTS listened (
 
 CREATE TABLE IF NOT EXISTS playlist_songs (
     id VARCHAR(255) PRIMARY KEY,
-    pid VARCHAR(20),
-    sid VARCHAR(20),
+    pid VARCHAR(36),
+    sid VARCHAR(36),
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (pid) REFERENCES playlists(pid),
     FOREIGN KEY (sid) REFERENCES songs(sid)
