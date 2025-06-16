@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, text
 from pathlib import Path
-import db_config
+from database import db_config
 
 # Build DB URL
 SQLALCHEMY_DATABASE_URL = (
