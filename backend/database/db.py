@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, text
 from pathlib import Path
-import db_config
+from database import db_config
 
 # Build DB URL
 SQLALCHEMY_DATABASE_URL = (
@@ -13,15 +13,26 @@ SCHEMA_PATH = Path(__file__).resolve().parent / "scripts/create_tables.sql"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=False)
 
 
-def run(sql: str, params: dict = None, fetch: bool = False):
+from sqlalchemy import text
+from database.db import engine  # 假设你是从这里导入的
+
+def run(sql: str, params: dict = None, fetch: bool = False, fetchone: bool = False):
     with engine.begin() as conn:
         result = conn.execute(text(sql), params or {})
-        if fetch:
+
+        if fetchone:
+            row = result.fetchone()
+            result.close()
+            return row
+
+        elif fetch:
             rows = result.fetchall()
             result.close()
             return rows
+
         else:
             result.close()
+
 
 
 def run_script(file_path: str):

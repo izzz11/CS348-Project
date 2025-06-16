@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 # Request schema (used when creating a user)
 class UserCreate(BaseModel):
@@ -21,3 +22,26 @@ class User(BaseModel):
     uid: str
     username: str
     password: str
+
+class Playlist(BaseModel):
+    pid: str
+    uid: str
+    name: str
+    description: str
+    private: bool
+    shared_with: Optional[str] = None
+
+# Request model for creating a playlist
+class PlaylistCreate(BaseModel):
+    uid: str
+    name: str
+    description: Optional[str] = ""
+    private: Optional[bool] = False
+    shared_with: Optional[str] = None
+
+# Request model for updating a playlist
+class PlaylistUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    private: Optional[bool] = None
+    shared_with: Optional[str] = None

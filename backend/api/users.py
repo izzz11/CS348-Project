@@ -5,6 +5,7 @@ from database.schema import models
 
 router = APIRouter(prefix="/users", tags=["users"])
 
+# fetch all users
 @router.get("/fetch_all", response_model=list[models.UserRead])
 def fetch_all_users():
     rows = user_repo.get_all_users()
@@ -13,7 +14,7 @@ def fetch_all_users():
         return []
     return [{"uid": row.uid, "username": row.username} for row in rows]
 
-
+# register
 @router.post("/register", response_model=models.UserRead,
              status_code=status.HTTP_201_CREATED)
 def register(u: models.UserCreate):
@@ -26,7 +27,7 @@ def register(u: models.UserCreate):
     print(f"User created: {row}")
     return {"uid": row.uid, "username": row.username}
 
-
+# login
 @router.post("/login", response_model=models.UserRead)
 def login(u: models.UserLogin):
     row = user_repo.get_by_username(u.username)

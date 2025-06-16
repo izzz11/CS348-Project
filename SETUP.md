@@ -14,7 +14,7 @@ npm run dev
 Requirements: python, pip
 ```
 cd backend
-pip install -r requirements.txt
+pip install -r requirement.txt
 uvicorn main:app --reload
 ```
 
