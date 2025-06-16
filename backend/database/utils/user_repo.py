@@ -1,10 +1,9 @@
-# database/user_repo.py
 from database.db import run
 
 def get_all_users():
     sql = """
     SELECT uid, username, password
-      FROM users
+    FROM users
     """
     result = run(sql, fetch=True)
     return result
@@ -13,21 +12,22 @@ def get_all_users():
 def get_by_username(username: str):
     sql = """
     SELECT uid, username, password
-      FROM users
-     WHERE username = :username
+    FROM users
+    WHERE username = :username
     """
-    result = run(sql, {"username": username}, fetch=True)
-    return result 
+    result = run(sql, {"username": username}, fetchone=True)
+    return result
+
 
 def create_user(username: str, password: str):
     import uuid
 
     uid = str(uuid.uuid4())
 
-    sql = """
+    # ✅ MySQL 不支持 RETURNING
+    sql_insert = """
     INSERT INTO users (uid, username, password)
     VALUES (:uid, :username, :password)
-    RETURNING uid, username, password
     """
 
     params = {
@@ -36,7 +36,15 @@ def create_user(username: str, password: str):
         "password": password
     }
 
-    row = run(sql, params, fetchone=True)
+    # 先插入
+    run(sql_insert, params)
+
+    # ✅ 再查询
+    sql_select = """
+    SELECT uid, username, password
+    FROM users
+    WHERE uid = :uid
+    """
+
+    row = run(sql_select, {"uid": uid}, fetchone=True)
     return row
-
-

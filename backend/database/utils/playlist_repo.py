@@ -1,15 +1,12 @@
-# database/utils/playlist_repo.py
-
 from database.db import run
 import uuid
 
 # 1️⃣ Create
 def create_playlist(uid: str, name: str, description: str = "", private: bool = False, shared_with: str = None):
     pid = str(uuid.uuid4())
-    sql = """
+    sql_insert = """
     INSERT INTO playlists (pid, uid, name, description, private, shared_with)
     VALUES (:pid, :uid, :name, :description, :private, :shared_with)
-    RETURNING pid, uid, name, description, private, shared_with
     """
     params = {
         "pid": pid,
@@ -19,7 +16,17 @@ def create_playlist(uid: str, name: str, description: str = "", private: bool = 
         "private": private,
         "shared_with": shared_with
     }
-    row = run(sql, params, fetchone=True)
+
+    # 🚫 No RETURNING — insert first
+    run(sql_insert, params)
+
+    # ✅ then SELECT
+    sql_select = """
+    SELECT pid, uid, name, description, private, shared_with
+    FROM playlists
+    WHERE pid = :pid
+    """
+    row = run(sql_select, {"pid": pid}, fetchone=True)
     return row
 
 # 2️⃣ Read all playlists by user
@@ -42,7 +49,7 @@ def get_playlist_by_pid(pid: str):
     row = run(sql, {"pid": pid}, fetchone=True)
     return row
 
-# 4️⃣ Update
+# 4️⃣ Update (no RETURNING, re-SELECT)
 def update_playlist(pid: str, name: str = None, description: str = None, private: bool = None, shared_with: str = None):
     fields = []
     params = {"pid": pid}
@@ -62,13 +69,21 @@ def update_playlist(pid: str, name: str = None, description: str = None, private
     if not fields:
         raise ValueError("No fields to update!")
 
-    sql = f"""
+    sql_update = f"""
     UPDATE playlists
     SET {', '.join(fields)}
     WHERE pid = :pid
-    RETURNING pid, uid, name, description, private, shared_with
     """
-    row = run(sql, params, fetchone=True)
+
+    run(sql_update, params)
+
+    # ✅ Re-select the updated row
+    sql_select = """
+    SELECT pid, uid, name, description, private, shared_with
+    FROM playlists
+    WHERE pid = :pid
+    """
+    row = run(sql_select, {"pid": pid}, fetchone=True)
     return row
 
 # 5️⃣ Delete
