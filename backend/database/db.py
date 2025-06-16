@@ -1,17 +1,16 @@
-# db.py
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from pathlib import Path
-from sqlalchemy import text
+import db_config
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./app.db"
-DB_PATH = Path(__file__).resolve().parent.parent / "app.db"
+# Build DB URL
+SQLALCHEMY_DATABASE_URL = (
+    f"mysql+mysqlconnector://{db_config.DB_USER}:{db_config.DB_PASSWORD}"
+    f"@{db_config.DB_HOST}:{db_config.DB_PORT}/{db_config.DB_NAME}"
+)
+
 SCHEMA_PATH = Path(__file__).resolve().parent / "scripts/create_tables.sql"
 
-
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, 
-    connect_args={"check_same_thread": False} # allows the connection to be shared across threads
-)
+engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=False)
 
 
 from sqlalchemy import text
@@ -36,11 +35,7 @@ def run(sql: str, params: dict = None, fetch: bool = False, fetchone: bool = Fal
 
 
 
-
 def run_script(file_path: str):
-    """
-    Execute a full SQL script (e.g. schema.sql).
-    """
     with open(file_path, "r") as f:
         sql = f.read()
     with engine.begin() as conn:
@@ -48,13 +43,11 @@ def run_script(file_path: str):
             if statement.strip():
                 conn.execute(text(statement.strip()))
 
-# Dependency for getting DB session in endpoints
+
 def get_db_conn():
     with engine.connect() as conn:
-        yield conn  # Connection is automatically closed after request
+        yield conn
 
-# Run the schema script to create tables if they don't exist
+
+# Run schema on startup
 run_script(SCHEMA_PATH)
-
-
-
