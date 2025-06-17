@@ -21,7 +21,6 @@ def create_playlist(p: models.PlaylistCreate):
         shared_with=p.shared_with
     )
     
-    print('roww', row)
     return row
 
 # Get all playlists for a user

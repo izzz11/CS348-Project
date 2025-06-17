@@ -19,15 +19,20 @@ def populate_songs_if_empty():
         if count == 0:
             print("🟡 Songs table is empty. Inserting data...")
             df = pd.read_csv("jamendo_data/jamendo_tracks.csv")
-            df = df[["id", "name", "genres", "artist_name", "duration", "shareurl"]]
-            df.columns = ["sid", "name", "genre", "artist", "duration", "other_info"]
-            df["year"] = 0
-            df["language"] = "unknown"
+            df = df[["id", "name", "genres", "artist_name", "duration", "audio", "audiodownload"]]
+
+            # Remove rows with NaN in 'audiodownload'
+            df = df[df["audiodownload"].notna()]
+
+            df.columns = ["sid", "name", "genre", "artist", "duration", "audio_path", "audio_download_path"]
+            
+            
 
             insert_sql = """
-                INSERT INTO songs (sid, name, genre, artist, year, language, duration, other_info)
-                VALUES (:sid, :name, :genre, :artist, :year, :language, :duration, :other_info)
+                INSERT INTO songs (sid, name, genre, artist, duration, audio_path, audio_download_path)
+                VALUES (:sid, :name, :genre, :artist, :duration, :audio_path, :audio_download_path)
             """
+
 
             for _, row in df.iterrows():
                 conn.execute(text(insert_sql), {
@@ -35,10 +40,9 @@ def populate_songs_if_empty():
                     "name": row["name"],
                     "genre": row["genre"],
                     "artist": row["artist"],
-                    "year": 0,
-                    "language": "unknown",
                     "duration": float(row["duration"]),
-                    "other_info": row["other_info"]
+                    "audio_path": row["audio_path"],
+                    "audio_download_path": row["audio_download_path"]
                 })
 
             print("✅ Songs table populated.")

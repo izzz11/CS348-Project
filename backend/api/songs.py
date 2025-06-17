@@ -12,6 +12,7 @@ router = APIRouter(prefix="/songs", tags=["songs"])
 def fetch_all_songs():
     rows = song_repo.get_all_songs()
     
+    print("Fetched songs:", rows)  # Debugging line
     if not rows:
         return []
     
@@ -21,10 +22,9 @@ def fetch_all_songs():
             "name": row["name"],
             "genre": row["genre"],
             "artist": row["artist"],
-            "year": row["year"],
-            "language": row["language"],
             "duration": row["duration"],
-            "other_info": row["other_info"]
+            "audio_path": row["audio_path"],
+            "audio_download_path": row["audio_download_path"]
         }
         for row in rows
     ]

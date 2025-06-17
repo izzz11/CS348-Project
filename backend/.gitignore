@@ -1,3 +1,4 @@
 __pycache__/
 venv/
 jamendo_data/*.mp3
+.DS_Store

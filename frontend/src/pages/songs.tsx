@@ -16,10 +16,9 @@ type Song = {
   name: string;
   genre: string;
   artist: string;
-  year: number;
-  language: string;
   duration: number;
-  other_info: string;
+  audio_path: string;
+  audio_download_path: string;
 };
 
 const columnHelper = createColumnHelper<Song>();
@@ -35,14 +34,6 @@ const columns = [
   }),
   columnHelper.accessor('genre', {
     header: 'Genre',
-    cell: info => info.getValue(),
-  }),
-  columnHelper.accessor('year', {
-    header: 'Year',
-    cell: info => info.getValue(),
-  }),
-  columnHelper.accessor('language', {
-    header: 'Language',
     cell: info => info.getValue(),
   }),
   columnHelper.accessor('duration', {
