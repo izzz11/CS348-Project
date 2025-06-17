@@ -23,7 +23,3 @@ Just a basic test setup for now — a `Users` table with a few sample names and 
 ### ✅ Current Progress
 
 We’ll start with a "Hello World" full-stack app to test the flow. This will set the foundation for the real matching logic and music features later on.
-
----
-
-Let me know if you want an even snappier or more humorous tone!
