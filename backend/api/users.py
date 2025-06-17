@@ -1,6 +1,6 @@
 # routers/users.py
 from fastapi import APIRouter, HTTPException, status
-from database.utils import user_repo
+from database.utils import user_repo, playlist_repo
 from database.schema import models
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -22,7 +22,14 @@ def register(u: models.UserCreate):
         raise HTTPException(400, "Username already registered")
 
     row = user_repo.create_user(u.username, u.password)
-    # row is a SQLAlchemy Row: (id, uid, username, password)
+    # Create default playlist for the new user
+    playlist_repo.create_playlist(
+        uid=row['uid'],
+        name='My Favourites',
+        description='Your favorite songs collection',
+        private=True,
+        shared_with=''
+    )
 
     print(f"User created: {row}")
     return {"uid": row['uid'], "username": row['username']}

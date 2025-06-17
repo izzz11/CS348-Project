@@ -2,13 +2,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Volume2, Heart, Shuffle, Repeat, MoreHorizontal } from 'lucide-react';
 
-interface Track {
-  id: number;
-  title: string;
+interface SongData {
+  sid: string;
+  name: string;
   artist: string;
-  album: string;
-  duration: string;
-  cover: string;
+  genre: string;
+  duration: number;
+  audio_path: string;
+  audio_download_path: string;
 }
 
 interface MusicInterfaceProps {
@@ -17,31 +18,51 @@ interface MusicInterfaceProps {
 
 const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState(0);
   const [progress, setProgress] = useState(0);
   const [volume, setVolume] = useState(75);
   const [isLiked, setIsLiked] = useState(false);
+  const [songData, setSongData] = useState<SongData | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const progressRef = useRef<HTMLDivElement>(null);
 
-  // Audio stuff (IMPORTANT, DONT DELETE)
+  // Audio stuff
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [audioLoaded, setAudioLoaded] = useState(false);
 
-  const fetchAndPlayAudio = async () => {
+  // Fetch song data on component mount
+  useEffect(() => {
+    const fetchSongData = async () => {
+      try {
+        const res = await fetch(`/api/song/play-song?songId=${songId}`);
+        if (!res.ok) throw new Error('Failed to fetch song');
+        const data = await res.json();
+        setSongData(data);
+      } catch (error) {
+        console.error('Error fetching song:', error);
+        setError('Failed to load song information');
+      }
+    };
+
+    fetchSongData();
+
+    // Cleanup function
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, [songId]);
+
+  const playAudio = async () => {
     try {
-      const res = await fetch(`/api/song/play-song?songId=${songId}`);
-      if (!res.ok) throw new Error('Failed to fetch song');
-      
+      if (!songData) throw new Error('No song data available');
 
-      const data = await res.json(); // Assumes API responds with { url: string }
-      const url = data.audio_path;
-
-
-      console.log('Playing song from URL:', url);
       if (audioRef.current) {
         audioRef.current.pause();
       }
-      audioRef.current = new Audio(url);
+
+      audioRef.current = new Audio(songData.audio_path);
       audioRef.current.volume = volume / 100;
 
       audioRef.current.onended = () => setIsPlaying(false);
@@ -56,267 +77,247 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId }) => {
       setIsPlaying(true);
     } catch (error) {
       console.error('Error playing song:', error);
+      setError('Failed to play song');
     }
   };
 
-
-
-
-  const tracks: Track[] = [
-    {
-      id: 1,
-      title: "Midnight Vibes",
-      artist: "Luna Eclipse",
-      album: "Neon Dreams",
-      duration: "3:24",
-      cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop"
-    },
-    {
-      id: 2,
-      title: "Electric Pulse",
-      artist: "Synthwave City",
-      album: "Digital Horizon",
-      duration: "4:12",
-      cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300&h=300&fit=crop"
-    },
-    {
-      id: 3,
-      title: "Cosmic Journey",
-      artist: "Stellar Drift",
-      album: "Infinity Loop",
-      duration: "5:47",
-      cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=300&h=300&fit=crop"
-    },
-    {
-      id: 4,
-      title: "Neon Nights",
-      artist: "Retro Future",
-      album: "Cyberpunk Dreams",
-      duration: "3:56",
-      cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300&h=300&fit=crop"
-    }
-  ];
-
-  useEffect(() => {
-    return () => {
-      audioRef.current?.pause();
-      audioRef.current = null;
-    };
-  }, []);
-
-
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (progressRef.current) {
+    if (progressRef.current && audioRef.current) {
       const rect = progressRef.current.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
       const newProgress = (clickX / rect.width) * 100;
+      const newTime = (newProgress / 100) * (audioRef.current.duration || 0);
+      audioRef.current.currentTime = newTime;
       setProgress(Math.max(0, Math.min(100, newProgress)));
     }
   };
 
   const togglePlay = () => {
     if (!audioLoaded) {
-      fetchAndPlayAudio();
+      playAudio();
     } else {
-      if (isPlaying) {
-        audioRef.current?.pause();
+      if (isPlaying && audioRef.current) {
+        audioRef.current.pause();
         setIsPlaying(false);
-      } else {
-        audioRef.current?.play();
+      } else if (audioRef.current) {
+        audioRef.current.play();
         setIsPlaying(true);
       }
     }
   };
 
+  if (error) {
+    return <div className="text-red-500 p-4">{error}</div>;
+  }
 
-  const nextTrack = () => {
-    setCurrentTrack((prev) => (prev + 1) % tracks.length);
-    setProgress(0);
-  };
-
-  const prevTrack = () => {
-    setCurrentTrack((prev) => (prev - 1 + tracks.length) % tracks.length);
-    setProgress(0);
-  };
-
-  const currentSong = tracks[currentTrack];
+  if (!songData) {
+    return <div className="p-4">Loading...</div>;
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
-      {/* Main Container */}
-      <div className="max-w-6xl mx-auto p-6">
-
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-              <span className="text-xl font-bold">♫</span>
-            </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              SoundWave
-            </h1>
-          </div>
-          <div className="flex items-center space-x-4">
-            <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
-              <MoreHorizontal size={20} />
-            </button>
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-          {/* Now Playing - Large Album Art */}
-          <div className="lg:col-span-2">
-            <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-3xl p-8 border border-purple-500/20">
-              <div className="flex flex-col md:flex-row items-center space-y-6 md:space-y-0 md:space-x-8">
-
-                {/* Album Art */}
-                <div className="relative group">
-                  <img
-                    src={currentSong.cover}
-                    alt={currentSong.album}
-                    className="w-64 h-64 rounded-2xl shadow-2xl transition-transform group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-black/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button
-                      onClick={togglePlay}
-                      className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
-                    >
-                      {isPlaying ? <Pause size={24} /> : <Play size={24} className="ml-1" />}
-                    </button>
-                  </div>
+    <div className="w-full max-w-7xl mx-auto px-4">
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Main Player Section */}
+        <div className="lg:w-2/3">
+          <div className="bg-white rounded-3xl shadow-sm p-8 h-full">
+            <div className="flex flex-col h-full">
+              {/* Song Info */}
+              <div className="flex flex-col md:flex-row gap-8 items-start mb-12">
+                <div className="w-72 h-72 rounded-2xl bg-indigo-500 flex items-center justify-center flex-shrink-0">
+                  <div className="text-white text-9xl font-light">{songData.name[0]}</div>
                 </div>
+                <div className="flex flex-col items-start pt-4">
+                  <h2 className="text-4xl font-bold text-gray-900 mb-3">{songData.name}</h2>
+                  <p className="text-xl text-indigo-600 mb-2 hover:text-indigo-700 cursor-pointer">{songData.artist}</p>
+                  <p className="text-gray-500 text-lg">{songData.genre}</p>
+                </div>
+              </div>
 
-                {/* Track Info */}
-                <div className="flex-1 text-center md:text-left">
-                  <h2 className="text-3xl font-bold mb-2">{currentSong.title}</h2>
-                  <p className="text-xl text-purple-300 mb-1">{currentSong.artist}</p>
-                  <p className="text-gray-400 mb-6">{currentSong.album}</p>
-
-                  {/* Progress Bar */}
-                  <div className="mb-6">
+              {/* Progress Bar */}
+              <div className="flex-grow flex items-center">
+                <div className="w-full">
+                  <div
+                    ref={progressRef}
+                    onClick={handleProgressClick}
+                    className="h-1 bg-gray-200 rounded-full cursor-pointer relative"
+                  >
                     <div
-                      ref={progressRef}
-                      onClick={handleProgressClick}
-                      className="w-full h-2 bg-slate-700 rounded-full cursor-pointer group"
-                    >
-                      <div
-                        className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full relative transition-all group-hover:h-3"
-                        style={{ width: `${progress}%` }}
-                      >
-                        <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      </div>
-                    </div>
-                    <div className="flex justify-between text-sm text-gray-400 mt-2">
-                      <span>{Math.floor(progress * 0.034)}:{String(Math.floor((progress * 2.04) % 60)).padStart(2, '0')}</span>
-                      <span>{currentSong.duration}</span>
-                    </div>
-                  </div>
-
-                  {/* Controls */}
-                  <div className="flex items-center justify-center space-x-6">
-                    <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
-                      <Shuffle size={20} />
-                    </button>
-                    <button onClick={prevTrack} className="p-3 hover:bg-white/10 rounded-full transition-colors">
-                      <SkipBack size={24} />
-                    </button>
-                    <button
-                      onClick={togglePlay}
-                      className="w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center hover:scale-105 transition-transform shadow-lg"
-                    >
-                      {isPlaying ? <Pause size={24} /> : <Play size={24} className="ml-1" />}
-                    </button>
-                    <button onClick={nextTrack} className="p-3 hover:bg-white/10 rounded-full transition-colors">
-                      <SkipForward size={24} />
-                    </button>
-                    <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
-                      <Repeat size={20} />
-                    </button>
+                      className="absolute left-0 top-0 h-full bg-indigo-500 rounded-full transition-all"
+                      style={{ width: `${progress}%` }}
+                    />
                   </div>
                 </div>
               </div>
+
+              {/* Controls */}
+              <div className="flex items-center justify-center gap-6 mt-12">
+                <button
+                  onClick={togglePlay}
+                  className="w-16 h-16 bg-indigo-500 rounded-full flex items-center justify-center hover:bg-indigo-600 
+                           transition-all duration-200 text-white shadow-lg hover:shadow-indigo-200"
+                >
+                  {isPlaying ? 
+                    <Pause size={28} /> : 
+                    <Play size={28} className="ml-1" />
+                  }
+                </button>
+                <button
+                  onClick={() => setIsLiked(!isLiked)}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200
+                    ${isLiked 
+                      ? 'text-red-500 bg-red-50 hover:bg-red-100' 
+                      : 'text-gray-400 hover:text-red-500 hover:bg-gray-100'
+                    }`}
+                >
+                  <Heart 
+                    size={24} 
+                    className="transition-transform hover:scale-110"
+                    fill={isLiked ? 'currentColor' : 'none'} 
+                  />
+                </button>
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-
-            {/* Volume Control */}
-            <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-purple-500/20">
-              <div className="flex items-center space-x-4">
-                <Volume2 size={20} className="text-purple-400" />
-                <div className="flex-1">
+        {/* Quick Actions Section */}
+        <div className="lg:w-1/3">
+          <div className="bg-white rounded-2xl shadow-sm p-8 h-full">
+            <h3 className="text-2xl font-bold text-gray-800 mb-8">Quick Actions</h3>
+            <div className="space-y-8">
+              {/* Volume Slider */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600 font-medium flex items-center gap-2">
+                    <Volume2 size={20} className="text-gray-500" />
+                    Volume
+                  </span>
+                  <span className="text-sm font-medium text-gray-500">{volume}%</span>
+                </div>
+                <div className="relative">
                   <input
                     type="range"
                     min="0"
                     max="100"
                     value={volume}
-                    onChange={(e) => setVolume(Number(e.target.value))}
-                    className="w-full h-2 bg-slate-700 rounded-full appearance-none cursor-pointer slider"
+                    onChange={(e) => {
+                      const newVolume = parseInt(e.target.value);
+                      setVolume(newVolume);
+                      if (audioRef.current) {
+                        audioRef.current.volume = newVolume / 100;
+                      }
+                    }}
+                    className="w-full h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer 
+                             accent-indigo-500 hover:accent-indigo-600 transition-all
+                             focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  />
+                  <div 
+                    className="absolute left-0 top-1/2 h-2 bg-indigo-500 rounded-l-lg -translate-y-1/2 pointer-events-none" 
+                    style={{ width: `${volume}%` }}
                   />
                 </div>
-                <span className="text-sm text-gray-400 w-8">{volume}</span>
               </div>
-            </div>
 
-            {/* Quick Actions */}
-            <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-purple-500/20">
-              <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-              <div className="space-y-3">
+              {/* Action Buttons */}
+              <div className="space-y-4">
                 <button
                   onClick={() => setIsLiked(!isLiked)}
-                  className={`w-full flex items-center space-x-3 p-3 rounded-xl transition-colors ${isLiked ? 'bg-red-500/20 text-red-400' : 'hover:bg-white/10'
-                    }`}
+                  className={`w-full flex items-center justify-between p-4 rounded-xl transition-all duration-200
+                    ${isLiked 
+                      ? 'bg-red-50 text-red-500 hover:bg-red-100' 
+                      : 'hover:bg-gray-50 text-gray-700'
+                    } group`}
                 >
-                  <Heart size={18} className={isLiked ? 'fill-current' : ''} />
-                  <span>Like Song</span>
+                  <span className="font-medium flex items-center gap-3">
+                    <Heart 
+                      size={20} 
+                      className={`transition-transform group-hover:scale-110 
+                        ${isLiked ? 'fill-red-500' : ''}`}
+                    />
+                    Like Song
+                  </span>
+                  <span className="text-sm font-medium">
+                    {isLiked ? 'Liked' : 'Like'}
+                  </span>
                 </button>
-                <button className="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-white/10 transition-colors">
-                  <span className="text-purple-400">+</span>
-                  <span>Add to Playlist</span>
+
+                <button 
+                  className="w-full flex items-center justify-between p-4 rounded-xl
+                    hover:bg-gray-50 text-gray-700 transition-all duration-200 group"
+                >
+                  <span className="font-medium flex items-center gap-3">
+                    <svg 
+                      className="w-5 h-5 transition-transform group-hover:scale-110" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M12 4v16m8-8H4" 
+                      />
+                    </svg>
+                    Add to Playlist
+                  </span>
+                  <span className="text-sm font-medium text-gray-500 group-hover:text-gray-700">
+                    Choose
+                  </span>
                 </button>
               </div>
-            </div>
 
-            {/* Up Next */}
-            <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-purple-500/20">
-              <h3 className="text-lg font-semibold mb-4">Up Next</h3>
-              <div className="space-y-3">
-                {tracks.slice(currentTrack + 1, currentTrack + 3).map((track, index) => (
-                  <div key={track.id} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer">
-                    <img src={track.cover} alt={track.album} className="w-10 h-10 rounded-lg" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{track.title}</p>
-                      <p className="text-xs text-gray-400 truncate">{track.artist}</p>
+              {/* Song Info */}
+              <div className="pt-6 border-t border-gray-100">
+                <h4 className="text-lg font-semibold text-gray-800 mb-4">Song Details</h4>
+                <div className="space-y-4">
+                  <div className="bg-gray-50 p-4 rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <span className="text-sm text-gray-500">Genre</span>
+                        <p className="font-medium text-gray-900">
+                          {songData.genre.split(',').map((genre, index) => (
+                            <span 
+                              key={index} 
+                              className="inline-block bg-indigo-50 text-indigo-700 rounded-full px-3 py-1 text-sm mr-2"
+                            >
+                              {genre.trim()}
+                            </span>
+                          ))}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                ))}
+                  
+                  <div className="bg-gray-50 p-4 rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <span className="text-sm text-gray-500">Duration</span>
+                        <p className="font-medium text-gray-900 flex items-center gap-2">
+                          <svg 
+                            className="w-4 h-4 text-gray-400" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                          >
+                            <path 
+                              strokeLinecap="round" 
+                              strokeLinejoin="round" 
+                              strokeWidth={2} 
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" 
+                            />
+                          </svg>
+                          {Math.floor(songData.duration / 60)}:{String(songData.duration % 60).padStart(2, '0')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        .slider::-webkit-slider-thumb {
-          appearance: none;
-          width: 16px;
-          height: 16px;
-          background: linear-gradient(to right, #a855f7, #ec4899);
-          border-radius: 50%;
-          cursor: pointer;
-        }
-        .slider::-moz-range-thumb {
-          width: 16px;
-          height: 16px;
-          background: linear-gradient(to right, #a855f7, #ec4899);
-          border-radius: 50%;
-          cursor: pointer;
-          border: none;
-        }
-      `}</style>
     </div>
   );
 };
