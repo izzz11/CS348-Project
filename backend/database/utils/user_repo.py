@@ -48,5 +48,4 @@ def create_user(username: str, password: str):
     """
 
     row = run(sql_select, {"uid": uid}, fetchone=True)
-    print("rowwww ", row)
     return row

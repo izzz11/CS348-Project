@@ -18,17 +18,9 @@ CREATE TABLE IF NOT EXISTS songs (
     name VARCHAR(100),
     genre VARCHAR(50),
     artist VARCHAR(100),
-    year INT,
-    language VARCHAR(50),
     duration FLOAT,
-    other_info TEXT
-);
-
-CREATE TABLE IF NOT EXISTS filepaths (
-    id VARCHAR(255) PRIMARY KEY,
-    sid VARCHAR(36),
-    filepath VARCHAR(255),
-    FOREIGN KEY (sid) REFERENCES songs(sid)
+    audio_path VARCHAR(1024),
+    audio_download_path VARCHAR(1024)
 );
 
 CREATE TABLE IF NOT EXISTS playlists (
