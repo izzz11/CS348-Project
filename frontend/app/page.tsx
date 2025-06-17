@@ -1,7 +1,9 @@
+'use client';
 import { useState } from 'react';
 import Head from 'next/head';
 import { FaPlay, FaMusic, FaHeadphones } from 'react-icons/fa';
 import Link from 'next/link';
+import "../globals.css";
 
 export default function Home() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -13,6 +15,8 @@ export default function Home() {
         <meta name="description" content="Discover and enjoy your favorite music" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+
+      
 
       {/* Decorative Background Circles */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-purple-700 opacity-30 rounded-full blur-3xl -z-10 animate-pulse" style={{ top: '-6rem', left: '-6rem' }} />

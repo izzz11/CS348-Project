@@ -32,3 +32,10 @@ def search_by_duration(min_sec: float = 0, max_sec: float = 1000):
         WHERE duration BETWEEN :min_sec AND :max_sec
     """
     return run(sql, {"min_sec": min_sec, "max_sec": max_sec}, fetch=True)
+
+def search_by_sid(sid: str):
+    sql = """
+        SELECT * FROM songs
+        WHERE sid = :sid
+    """
+    return run(sql, {"sid": sid}, fetch=True)
