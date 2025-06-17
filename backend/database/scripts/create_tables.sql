@@ -48,10 +48,10 @@ CREATE TABLE IF NOT EXISTS listened (
 );
 
 CREATE TABLE IF NOT EXISTS playlist_songs (
-    id VARCHAR(255) PRIMARY KEY,
     pid VARCHAR(36),
     sid VARCHAR(36),
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (pid, sid),
     FOREIGN KEY (pid) REFERENCES playlists(pid),
     FOREIGN KEY (sid) REFERENCES songs(sid)
 );

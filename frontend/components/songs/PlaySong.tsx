@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, Heart, Shuffle, Repeat, MoreHorizontal } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, Heart, Shuffle, Repeat, MoreHorizontal, X } from 'lucide-react';
 
 interface SongData {
   sid: string;
@@ -12,18 +12,37 @@ interface SongData {
   audio_download_path: string;
 }
 
-interface MusicInterfaceProps {
-  songId: string;
+interface Playlist {
+  pid: string;
+  name: string;
+  description: string;
+  private: boolean;
+  shared_with: string | null;
 }
 
-const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId }) => {
+interface MusicInterfaceProps {
+  songId: string;
+  userId: string;
+}
+
+interface Toast {
+  message: string;
+  type: 'success' | 'error';
+}
+
+const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId, userId }) => {
+  const uid = localStorage.getItem('uid');
+  console.log("uid", uid)
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [volume, setVolume] = useState(75);
   const [isLiked, setIsLiked] = useState(false);
   const [songData, setSongData] = useState<SongData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [showPlaylists, setShowPlaylists] = useState(false);
   const progressRef = useRef<HTMLDivElement>(null);
+  const [toast, setToast] = useState<Toast | null>(null);
 
   // Audio stuff
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -42,7 +61,7 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId }) => {
         setError('Failed to load song information');
       }
     };
-
+    // fetchUserPlaylists();
     fetchSongData();
 
     // Cleanup function
@@ -53,6 +72,17 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId }) => {
       }
     };
   }, [songId]);
+
+  const handleLikePlaylist = async (playlistId: string) => {
+    setIsLiked(!isLiked)
+    const response = await fetch('http://localhost:8000/playlist-songs/like', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ pid: playlistId, sid: songId })
+    })
+  }
 
   const playAudio = async () => {
     try {
@@ -106,6 +136,65 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId }) => {
     }
   };
 
+  const fetchUserPlaylists = async () => {
+    try {
+      console.log("fetching playlists for user", uid)
+      const response = await fetch(`http://localhost:8000/playlists/user/${uid}`);
+      if (!response.ok) throw new Error('Failed to fetch playlists');
+      const data = await response.json();
+      console.log("play list data", data)
+      setPlaylists(data);
+    } catch (error) {
+      console.error('Error fetching playlists:', error);
+      setError('Failed to load playlists');
+    }
+  };
+
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000); // Hide after 3 seconds
+  };
+
+  const addSongToPlaylist = async (playlistId: string, playlistName: string) => {
+    try {
+      console.log("playlistId", playlistId)
+      console.log("songId", songId)
+      const response = await fetch('http://localhost:8000/playlist-songs/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          pid: playlistId,
+          sid: songId
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to add song to playlist');
+      }
+      
+      setShowPlaylists(false);
+      showToast(`Song added to "${playlistName}" successfully`, 'success');
+      
+    } catch (error: any) {
+      console.error('Error adding song to playlist:', error);
+      let errorMessage = 'Failed to add song to playlist';
+      
+      if (typeof error.message === 'string') {
+        if (error.message.includes('does not exist')) {
+          errorMessage = 'This playlist no longer exists';
+        } else if (error.message.includes('already exists')) {
+          errorMessage = 'Song is already in this playlist';
+        }
+      }
+      
+      showToast(errorMessage, 'error');
+    }
+  };
+
   if (error) {
     return <div className="text-red-500 p-4">{error}</div>;
   }
@@ -116,6 +205,21 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId }) => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4">
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg flex items-center gap-2 ${
+          toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+        } text-white`}>
+          <span>{toast.message}</span>
+          <button 
+            onClick={() => setToast(null)}
+            className="p-1 hover:bg-white/20 rounded-full transition-colors"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Main Player Section */}
         <div className="lg:w-2/3">
@@ -241,30 +345,57 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId }) => {
                   </span>
                 </button>
 
-                <button 
-                  className="w-full flex items-center justify-between p-4 rounded-xl
-                    hover:bg-gray-50 text-gray-700 transition-all duration-200 group"
-                >
-                  <span className="font-medium flex items-center gap-3">
-                    <svg 
-                      className="w-5 h-5 transition-transform group-hover:scale-110" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        strokeWidth={2} 
-                        d="M12 4v16m8-8H4" 
-                      />
-                    </svg>
-                    Add to Playlist
-                  </span>
-                  <span className="text-sm font-medium text-gray-500 group-hover:text-gray-700">
-                    Choose
-                  </span>
-                </button>
+                <div className="relative">
+                  <button 
+                    onClick={() => {
+                      fetchUserPlaylists();
+                      setShowPlaylists(!showPlaylists);
+                    }}
+                    className="w-full flex items-center justify-between p-4 rounded-xl
+                      hover:bg-gray-50 text-gray-700 transition-all duration-200 group"
+                  >
+                    <span className="font-medium flex items-center gap-3">
+                      <svg 
+                        className="w-5 h-5 transition-transform group-hover:scale-110" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth={2} 
+                          d="M12 4v16m8-8H4" 
+                        />
+                      </svg>
+                      Add to Playlist
+                    </span>
+                    <span className="text-sm font-medium text-gray-500 group-hover:text-gray-700">
+                      {showPlaylists ? 'Close' : 'Choose'}
+                    </span>
+                  </button>
+
+                  {/* Playlist Selection Dropdown */}
+                  {showPlaylists && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-100 max-h-60 overflow-y-auto z-10">
+                      {playlists.length === 0 ? (
+                        <div className="p-4 text-gray-500 text-center">No playlists found</div>
+                      ) : (
+                        playlists.map((playlist) => (
+                          <button
+                            key={playlist.pid}
+                            onClick={() => addSongToPlaylist(playlist.pid, playlist.name)}
+                            className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors duration-150
+                                     flex items-center justify-between group"
+                          >
+                            <span className="font-medium text-gray-700">{playlist.name}</span>
+                            <span className="text-sm text-gray-400 group-hover:text-indigo-500">Add</span>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Song Info */}

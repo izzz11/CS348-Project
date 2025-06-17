@@ -59,3 +59,8 @@ class SongRead(BaseModel):
     duration: float
     audio_path: str
     audio_download_path: str
+
+# ================ PLAYLIST SONGS SCHEMA ================
+class PlaylistSongCreate(BaseModel):
+    pid: str
+    sid: str
