@@ -1,3 +1,4 @@
+'use client';
 import Head from 'next/head';
 import Link from 'next/link';
 import { FaUserPlus } from 'react-icons/fa';

@@ -47,3 +47,7 @@ def get_by_duration(
     max_duration: float = Query(1000)
 ):
     return song_repo.search_by_duration(min_duration, max_duration)
+
+@router.get("/fetch-song", response_model=models.SongRead)
+def fetch_song(sid: str):
+    return song_repo.search_by_sid(sid)[0]
