@@ -58,15 +58,22 @@ To launch the full-stack TuneMatch app locally, follow these steps:
 2. (Optional but recommended) Create a Python virtual environment:
    ```bash
    python3 -m venv env
-   source env/bin/activate    # On Windows: .\env\Scripts\activate
+   source venv/bin/activate    # On Windows: .\env\Scripts\activate
    ```
 
 3. Install all required Python dependencies:
    ```bash
    pip install -r requirements.txt
    ```
+4. Set Up Database:
+   ```
+   docker-compose up -d
+   ```
+   to set up mysql local db.
 
-4. Start the FastAPI server:
+   > Make sure to delete app.db if you want a fresh database
+
+5. Start the FastAPI server:
    ```bash
    uvicorn main:app --reload
    ```
@@ -109,3 +116,19 @@ To launch the full-stack TuneMatch app locally, follow these steps:
 - ➕ **Add/Remove Songs from Playlist**
 - ⭐ **Favourite Songs**
 - 🔊 **Fetch and Play MP3 files** via stored file paths
+
+### 📂 SQL Setup
+
+All SQL files for setting up the database are located in:
+
+`backend/database/scripts/`  
+- `create_tables.sql`: defines the schema and creates all necessary tables  
+- `constraints.sql`: includes foreign key and other constraints  
+- `triggers.sql`: contains trigger definitions (if any)
+
+### 📄 Query Logic
+
+Most SQL query logic (such as select statements) is implemented in Python files located in:
+
+`backend/database/utils/`  
+- Files ending with `_repo.py` handle operations for playlists, songs, and users.
