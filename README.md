@@ -108,7 +108,7 @@ To launch the full-stack TuneMatch app locally, follow these steps:
 
 ---
 
-### ✅ Current Features Supported
+### ✅ Current Features Supported (Backend, part of Frontend)
 
 - 🔐 **User Registration/Login**: Secure account creation and access.
 - 🎶 **Load and View Songs**: Browse preloaded song list with metadata.
