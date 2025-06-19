@@ -1,8 +1,8 @@
 # CS 348 Project - 🎵 **TuneMatch: A Music-Based Matching App (WIP)**
 
-We’re building **TuneMatch**, a simple app that connects people based on their music taste.
+We’re building **TuneMatch**, a simple app that connects people based on their music taste (kinda like Tinder but for music)
 
-### 🧰 Tech Stack (planned):
+### 🧰 Tech Stack:
 
 * **MySQL** for the database
 * **Fast API** for the backend
