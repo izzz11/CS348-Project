@@ -19,7 +19,7 @@ The system supports three core tables: `Songs`, `Users`, and `Playlists`.
 #### 1. **Songs Table**
 - **Source**: Songs are fetched online via the Spotify API or scraped datasets.
 - **Stored Fields**:
-  - `id`, `name`, `artist_name`, `duration`, `file_path` (local path to `.mp3`)
+  - `id`, `name`, `artist_name`, `duration`, `file_path` (path to audio URL `.mp3`)
 - **Sample Data**: Initially, we preload **100 songs** as a test dataset in **Milestone 1**.
 - **Loading Mechanism**:
   - Executing `main.py` will:
@@ -126,9 +126,21 @@ All SQL files for setting up the database are located in:
 - `constraints.sql`: includes foreign key and other constraints  
 - `triggers.sql`: contains trigger definitions (if any)
 
+---
+
 ### 📄 Query Logic
 
 Most SQL query logic (such as select statements) is implemented in Python files located in:
 
 `backend/database/utils/`  
 - Files ending with `_repo.py` handle operations for playlists, songs, and users.
+
+### Test Files for Task 5
+
+The required files for **Task 5** — `test-sample.sql` (containing SQL statements) and `test-sample.out` (showing execution results on the sample database) — are located in:
+
+```bash
+backend/database/schema/scripts/test-sample.sql
+backend/database/schema/scripts/test-sample.out
+```
+These files operate on the **sample database**, not the full dataset.

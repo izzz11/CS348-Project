@@ -1,7 +1,7 @@
 -- CREATE TABLES IF THEY DO NOT EXIST
 -- Target: SQLite database for a music streaming application
 
-DROP TABLE IF EXISTS playlist_songs, listened, playlists, filepaths, songs, users;
+-- DROP TABLE IF EXISTS playlist_songs, listened, playlists, filepaths, songs, users;
 
 CREATE TABLE IF NOT EXISTS users (
     uid VARCHAR(36) PRIMARY KEY,
