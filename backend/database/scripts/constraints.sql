@@ -34,14 +34,13 @@ ALTER TABLE playlists
     ADD CONSTRAINT check_description CHECK (LENGTH(description) <= 1000),
     ADD CONSTRAINT fk_user FOREIGN KEY(uid) REFERENCES users(uid);
 
--- Listened table constraints
-ALTER TABLE listened
+-- User track actions table constraints
+ALTER TABLE user_track_actions
     ADD CONSTRAINT check_rating CHECK (rating >= 1 AND rating <= 5),
     ADD CONSTRAINT check_total_plays CHECK (total_plays >= 0),
     ADD CONSTRAINT unique_user_song UNIQUE (uid, sid),
     ADD CONSTRAINT fk_user FOREIGN KEY(uid) REFERENCES users(uid),
-    ADD CONSTRAINT fk_song FOREIGN KEY(sid) REFERENCES songs(sid),
-    ADD CONSTRAINT fk_playlist FOREIGN KEY(pid) REFERENCES playlists(pid);
+    ADD CONSTRAINT fk_song FOREIGN KEY(sid) REFERENCES songs(sid);
 
 -- Playlist_songs table constraints
 ALTER TABLE playlist_songs
