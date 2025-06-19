@@ -117,6 +117,8 @@ To launch the full-stack TuneMatch app locally, follow these steps:
 - ⭐ **Favourite Songs**
 - 🔊 **Fetch and Play MP3 files** via stored file paths
 
+---
+
 ### 📂 SQL Setup
 
 All SQL files for setting up the database are located in:
@@ -126,7 +128,6 @@ All SQL files for setting up the database are located in:
 - `constraints.sql`: includes foreign key and other constraints  
 - `triggers.sql`: contains trigger definitions (if any)
 
----
 
 ### 📄 Query Logic
 
@@ -134,6 +135,8 @@ Most SQL query logic (such as select statements) is implemented in Python files 
 
 `backend/database/utils/`  
 - Files ending with `_repo.py` handle operations for playlists, songs, and users.
+
+---
 
 ### Test Files for Task 5
 
