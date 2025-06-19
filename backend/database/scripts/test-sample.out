@@ -1,0 +1,19 @@
+uid	username	name	age	password	email	country
+u1	eloise	NULL	NULL	password	eloise@example.com	NULL
+u2	Amy	NULL	NULL	AmysPassword	amy@example.com	NULL
+sid	name	genre	artist	duration	audio_path	audio_download_path
+s1	Calm Waves	Ambient	DJ Ocean	180.5	/audio/calm.mp3	/download/calm.mp3
+sid	name	genre	artist	duration	audio_path	audio_download_path
+s1	Calm Waves	Ambient	DJ Ocean	180.5	/audio/calm.mp3	/download/calm.mp3
+sid	name	genre	artist	duration	audio_path	audio_download_path
+s1	Calm Waves	Ambient	DJ Ocean	180.5	/audio/calm.mp3	/download/calm.mp3
+sid	name	genre	artist	duration	audio_path	audio_download_path
+s1	Calm Waves	Ambient	DJ Ocean	180.5	/audio/calm.mp3	/download/calm.mp3
+sid	name	genre	artist	duration	audio_path	audio_download_path
+s1	Calm Waves	Ambient	DJ Ocean	180.5	/audio/calm.mp3	/download/calm.mp3
+pid	uid	name	description	private	shared_with
+p1	u1	My Chill Playlist	Relax and study	0	NULL
+pid	uid	name	description	private	shared_with
+p1	u1	My Chill Playlist	Relax and study	0	NULL
+sid	name	genre	artist	duration	audio_path	audio_download_path
+s1	Calm Waves	Ambient	DJ Ocean	180.5	/audio/calm.mp3	/download/calm.mp3
