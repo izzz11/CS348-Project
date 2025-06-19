@@ -63,7 +63,7 @@ To launch the full-stack TuneMatch app locally, follow these steps:
 
 3. Install all required Python dependencies:
    ```bash
-   pip install -r requirements.txt
+   pip install -r requirement.txt
    ```
 4. Set Up Database:
    ```
