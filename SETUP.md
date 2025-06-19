@@ -26,3 +26,4 @@ docker-compose up -d
 ```
 to set up mysql local db
 Make sure to delete app.db if you want a fresh database
+

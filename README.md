@@ -147,3 +147,14 @@ backend/database/schema/scripts/test-sample.sql
 backend/database/schema/scripts/test-sample.out
 ```
 These files operate on the **sample database**, not the full dataset.
+
+---
+### Database Testing Note
+
+If you need to test the database, you can run the following command in your terminal to access MySQL inside the Docker container:
+
+```bash
+docker exec -it musicdb mysql -u musicuser -pmusicpass musicdb
+```
+
+This command will open a MySQL prompt connected to the `musicdb` database, allowing you to run queries directly for testing.
