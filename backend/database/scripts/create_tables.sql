@@ -23,20 +23,12 @@ CREATE TABLE IF NOT EXISTS songs (
 
 CREATE TABLE IF NOT EXISTS playlists (
     pid VARCHAR(36) PRIMARY KEY,
+    uid VARCHAR(36),
     name VARCHAR(100),
     description TEXT,
     private BOOLEAN DEFAULT FALSE,
+    shared_with VARCHAR(100),
     FOREIGN KEY (uid) REFERENCES users(uid)
-);
-
--- Might need a better name
-CREATE TABLE IF NOT EXISTS user_playlists (
-    uid VARCHAR(36),
-    pid VARCHAR(36),
-    shared_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (uid, pid),
-    FOREIGN KEY (uid) REFERENCES users(uid),
-    FOREIGN KEY (pid) REFERENCES playlists(pid)
 );
 
 CREATE TABLE IF NOT EXISTS user_track_actions (
@@ -60,5 +52,8 @@ CREATE TABLE IF NOT EXISTS playlist_songs (
     FOREIGN KEY (sid) REFERENCES songs(sid)
 );
 
+ALTER TABLE users MODIFY uid VARCHAR(36);
+ALTER TABLE playlists MODIFY uid VARCHAR(36);
+ALTER TABLE playlists MODIFY pid VARCHAR(36);
 
 
