@@ -25,8 +25,7 @@ CREATE TABLE IF NOT EXISTS playlists (
     pid VARCHAR(36) PRIMARY KEY,
     name VARCHAR(100),
     description TEXT,
-    private BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (uid) REFERENCES users(uid)
+    private BOOLEAN DEFAULT FALSE
 );
 
 -- Might need a better name

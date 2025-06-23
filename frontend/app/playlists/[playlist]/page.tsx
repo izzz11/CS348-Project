@@ -11,7 +11,6 @@ interface Playlist {
   name: string;
   description: string;
   private: boolean;
-  shared_with: string | null;
 }
 
 export default function PlaylistPage({ params }: { params: { playlist: string } }) {

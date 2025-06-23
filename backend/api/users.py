@@ -27,8 +27,7 @@ def register(u: models.UserCreate):
         uid=row['uid'],
         name='My Favourites',
         description='Your favorite songs collection',
-        private=True,
-        shared_with=''
+        private=True
     )
 
     print(f"User created: {row}")
