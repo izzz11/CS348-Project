@@ -22,12 +22,14 @@ def register(u: models.UserCreate):
         raise HTTPException(400, "Username already registered")
 
     row = user_repo.create_user(u.username, u.password)
+
     # Create default playlist for the new user
     playlist_repo.create_playlist(
         uid=row['uid'],
         name='My Favourites',
         description='Your favorite songs collection',
-        private=True
+        private=True,
+        is_favourite=True
     )
 
     print(f"User created: {row}")

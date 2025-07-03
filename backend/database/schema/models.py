@@ -31,6 +31,7 @@ class Playlist(BaseModel):
     name: str
     description: str
     private: bool
+    is_favourite: bool
 
 # Request model for creating a playlist
 class PlaylistCreate(BaseModel):
@@ -49,6 +50,7 @@ class UserPlaylist(BaseModel):
     uid: str
     pid: str
     shared_at: Optional[str] = None
+    is_favourite: bool
 
 # ================ SONG SCHEMA ================
 class SongRead(BaseModel):

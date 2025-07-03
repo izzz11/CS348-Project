@@ -17,7 +17,8 @@ def create_playlist(uid: str, p: models.PlaylistCreate):
         uid=uid,
         name=p.name,
         description=p.description,
-        private=p.private
+        private=p.private,
+        is_favourite=False
     )
     
     return row
@@ -67,3 +68,11 @@ def share_playlist(pid: str, target_uid: str):
 def get_playlist_users(pid: str):
     rows = playlist_repo.get_playlist_users(pid)
     return rows
+
+# # Get favourite playlist for a user
+# @router.get("/user/{uid}/favourite", response_model=models.Playlist)
+# def get_favourite_playlist(uid: str):
+#     rows = playlist_repo.get_favourite_playlists_by_user(uid)
+#     if not rows or len(rows) == 0:
+#         raise HTTPException(status_code=404, detail="Favourite playlist not found")
+#     return rows[0]

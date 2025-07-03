@@ -28,5 +28,4 @@ async def remove_song(pid: str, sid: str):
 @router.get("/{pid}")
 async def get_songs(pid: str):
     songs = get_playlist_songs(pid)
-    print("songs", songs)
     return {"songs": songs} 

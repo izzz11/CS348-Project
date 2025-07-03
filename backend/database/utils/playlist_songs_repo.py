@@ -94,14 +94,13 @@ def get_playlist_songs(pid: str) -> List[str]:
     """
     try:
         sql = """
-        SELECT sid 
-        FROM playlist_songs 
-        WHERE pid = :pid
+        SELECT s.*
+        FROM playlist_songs ps
+        NATURAL JOIN songs s
+        WHERE ps.pid = :pid
         """
-        print("pid", pid)
         rows = run(sql, {"pid": pid}, fetch=True)
-        print("rows", rows)
-        return [row['sid'] for row in rows] if rows else []
+        return rows if rows else []
         
     except Exception as e:
         print(f"Database error: {e}")
