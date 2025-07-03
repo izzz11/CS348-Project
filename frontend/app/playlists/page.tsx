@@ -42,7 +42,6 @@ export default function Playlists() {
           throw new Error('Failed to fetch playlists');
         }
         const data = await response.json();
-        console.log(data);
         // Sort so that the playlist with is_favourite === true is at the beginning
         const sortedData = Array.isArray(data)
           ? [...data].sort((a, b) => (b.is_favourite ? 1 : 0) - (a.is_favourite ? 1 : 0))

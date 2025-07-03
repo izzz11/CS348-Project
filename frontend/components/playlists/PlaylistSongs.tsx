@@ -24,47 +24,6 @@ interface PlaylistSongsProps {
 
 const PlaylistSongs: React.FC<PlaylistSongsProps> = ({ pid, playlistName, description, songs }) => {
 
-  console.log(songs);
-  // const [songs, setSongs] = useState<Song[]>(propSongs || []);
-  // const [loading, setLoading] = useState(!propSongs);
-  // const [error, setError] = useState<string | null>(null);
-
-  // useEffect(() => {
-  //   if (propSongs) return;
-  //   const fetchSongs = async () => {
-  //     try {
-  //       const response = await fetch(`/api/playlist-songs/${pid}`);
-  //       console.log("SONG DATA:", response);
-  //       if (!response.ok) throw new Error('Failed to fetch songs');
-  //       const data = await response.json();
-  //       setSongs(data.songs);
-  //     } catch (error) {
-  //       console.error('Error fetching songs:', error);
-  //       setError('Failed to load songs');
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   fetchSongs();
-  // }, [pid, propSongs]);
-
-  // if (loading) {
-  //   return (
-  //     <div className="text-center py-8">
-  //       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6C5CE7] mx-auto"></div>
-  //       <p className="mt-4 text-gray-600">Loading songs...</p>
-  //     </div>
-  //   );
-  // }
-
-  // if (error) {
-  //   return (
-  //     <div className="text-center py-8 text-red-500 bg-white rounded-xl shadow-lg p-6">
-  //       {error}
-  //     </div>
-  //   );
-  // }
-
   return (
     <div className="space-y-6">
       {/* Playlist Header */}
