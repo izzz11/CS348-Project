@@ -26,8 +26,6 @@ export async function logout() {
       method: 'POST',
       credentials: 'include',
     });
-    
-    window.location.href = '/';
   } catch (error) {
     console.error('Error during logout:', error);
   }

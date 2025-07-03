@@ -3,11 +3,13 @@
 import MusicInterface from "@/components/songs/PlaySong";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from '../../../lib/AuthContext';
 
 export default function PlaySongPage() {
   const params = useParams();
   const slug = params?.song as string;
-  const userId = localStorage.getItem('uid');
+  const { user } = useAuth();
+  const userId = user?.uid || '';
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <div className="container mx-auto px-4 py-8">
@@ -21,7 +23,7 @@ export default function PlaySongPage() {
         </div>
         
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-          <MusicInterface songId={slug} userId={userId || ''}/>
+          <MusicInterface songId={slug} userId={userId}/>
         </div>
       </div>
     </div>

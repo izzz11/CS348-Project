@@ -13,32 +13,13 @@ interface Song {
 }
 
 interface PlaylistSongItemProps {
-  sid: string;
+  song: Song;
   index: number;
 }
 
-const PlaylistSongItem: React.FC<PlaylistSongItemProps> = ({ sid, index }) => {
-  const [song, setSong] = useState<Song | null>(null);
-  const [loading, setLoading] = useState(true);
+const PlaylistSongItem: React.FC<PlaylistSongItemProps> = ({ song, index }) => {
+  // No need to fetch song details, song is provided as prop
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchSongDetails = async () => {
-      try {
-        const response = await fetch(`http://localhost:8000/songs/fetch-song?sid=${sid}`);
-        if (!response.ok) throw new Error(`Failed to fetch song ${sid}`);
-        const data = await response.json();
-        setSong(data);
-      } catch (error) {
-        console.error('Error fetching song:', error);
-        setError('Failed to load song');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSongDetails();
-  }, [sid]);
 
   const formatDuration = (duration: number) => {
     const minutes = Math.floor(duration / 60);
@@ -46,23 +27,10 @@ const PlaylistSongItem: React.FC<PlaylistSongItemProps> = ({ sid, index }) => {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  if (loading) {
-    return (
-      <div className="grid grid-cols-12 gap-4 px-6 py-4 items-center text-sm animate-pulse">
-        <div className="col-span-1 bg-gray-200 h-4 rounded"></div>
-        <div className="col-span-4 bg-gray-200 h-4 rounded"></div>
-        <div className="col-span-3 bg-gray-200 h-4 rounded"></div>
-        <div className="col-span-2 bg-gray-200 h-4 rounded"></div>
-        <div className="col-span-1 bg-gray-200 h-4 rounded"></div>
-        <div className="col-span-1"></div>
-      </div>
-    );
-  }
-
   if (error || !song) {
     return (
       <div className="grid grid-cols-12 gap-4 px-6 py-4 items-center text-sm text-red-500">
-        <div className="col-span-12">Error loading song {sid}</div>
+        <div className="col-span-12">Error loading song {song?.sid}</div>
       </div>
     );
   }

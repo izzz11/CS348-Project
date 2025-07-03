@@ -11,7 +11,7 @@ type User = {
 type AuthContextType = {
   user: User;
   loading: boolean;
-  logout: () => Promise<void>;
+  logout: (router?: any) => Promise<void>;
   refreshUser: () => Promise<void>;
 };
 
@@ -46,9 +46,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         window.dispatchEvent(new CustomEvent(AUTH_STATE_CHANGE_EVENT, { 
           detail: { user: userData } 
         }));
-        
-        // Notify other tabs/windows
-        notifyAuthChange();
       }
     } catch (error) {
       setUser(null);
@@ -58,9 +55,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         window.dispatchEvent(new CustomEvent(AUTH_STATE_CHANGE_EVENT, { 
           detail: { user: null } 
         }));
-        
-        // Notify other tabs/windows
-        notifyAuthChange();
       }
     } finally {
       setLoading(false);
@@ -68,18 +62,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // Handle logout
-  const handleLogout = async () => {
+  const handleLogout = async (router?: any) => {
     await logout();
     setUser(null);
-    
     // Dispatch event for logout
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent(AUTH_STATE_CHANGE_EVENT, { 
         detail: { user: null } 
       }));
-      
-      // Notify other tabs/windows
       notifyAuthChange();
+    }
+    // If router is provided, navigate to home
+    if (router) {
+      router.push('/');
     }
   };
 

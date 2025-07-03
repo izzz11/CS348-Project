@@ -7,27 +7,21 @@ import { useAuth, AUTH_STATE_CHANGE_EVENT } from '../../lib/AuthContext';
 
 export default function Navbar() {
   const router = useRouter();
-  const { user, loading, logout, refreshUser } = useAuth();
+  const { user, loading, logout } = useAuth();
 
   // Listen for auth state changes
   useEffect(() => {
     const handleAuthChange = () => {
-      // Refresh user data when auth state changes
-      refreshUser();
+      // Just force a re-render by updating state if needed, but do not call refreshUser
     };
-
-    // Add event listener for auth state changes
     window.addEventListener(AUTH_STATE_CHANGE_EVENT, handleAuthChange);
-
     return () => {
-      // Clean up event listener
       window.removeEventListener(AUTH_STATE_CHANGE_EVENT, handleAuthChange);
     };
-  }, [refreshUser]);
+  }, []);
 
   const handleLogout = async () => {
-    await logout();
-    router.push('/');
+    await logout(router);
   };
 
   return (
