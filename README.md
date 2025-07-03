@@ -30,7 +30,7 @@ The system supports three core tables: `Songs`, `Users`, and `Playlists`.
 #### 2. **Users Table**
 - **Created dynamically** when a user **registers** or **logs in** via the frontend.
 - **Stored Fields**:
-  - `uid`, `username`, `password` (hashed)
+  - `uid`, `username`, `password`
 - The `users` table is continuously updated as new users join or update credentials.
 
 #### 3. **Playlists Table**

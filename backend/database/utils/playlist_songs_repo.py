@@ -67,10 +67,21 @@ def remove_song_from_playlist(pid: str, sid: str) -> bool:
         WHERE pid = :pid AND sid = :sid
         """
         params = {"pid": pid, "sid": sid}
-        result = run(sql, params)
         
-        # Check if any rows were affected
-        return result is not None
+        # First check if the song exists in the playlist
+        check_sql = """
+        SELECT 1 FROM playlist_songs 
+        WHERE pid = :pid AND sid = :sid
+        """
+        exists = run(check_sql, params, fetchone=True)
+        if not exists:
+            print(f"Song {sid} does not exist in playlist {pid}")
+            return False
+            
+        # Then delete it
+        run(sql, params)
+        print(f"Successfully removed song {sid} from playlist {pid}")
+        return True
         
     except Exception as e:
         print(f"Database error: {e}")
