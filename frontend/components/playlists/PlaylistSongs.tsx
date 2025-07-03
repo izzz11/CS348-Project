@@ -3,13 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import { Play, MoreHorizontal, Clock, Music, Heart, Headphones } from 'lucide-react';
 import Link from 'next/link';
+import PlaylistSongItem from './PlaylistSongItem';
 
 interface Song {
   sid: string;
-  name: string;
-  artist: string;
-  genre: string;
-  duration: number;
 }
 
 interface PlaylistSongsProps {
@@ -26,10 +23,10 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = ({ pid, playlistName, descri
   useEffect(() => {
     const fetchSongs = async () => {
       try {
-        const response = await fetch(`/api/playlist-songs/${pid}`);
+        const response = await fetch(`http://localhost:8000/playlist-songs/${pid}`);
         if (!response.ok) throw new Error('Failed to fetch songs');
         const data = await response.json();
-        setSongs(data.songs);
+        setSongs(data.songs.map((sid: string) => ({ sid })));
       } catch (error) {
         console.error('Error fetching songs:', error);
         setError('Failed to load songs');
@@ -40,12 +37,6 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = ({ pid, playlistName, descri
 
     fetchSongs();
   }, [pid]);
-
-  const formatDuration = (duration: number) => {
-    const minutes = Math.floor(duration / 60);
-    const seconds = Math.floor(duration % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
 
   if (loading) {
     return (
@@ -105,36 +96,11 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = ({ pid, playlistName, descri
 
             {/* Songs */}
             {songs.map((song, index) => (
-              <div
+              <PlaylistSongItem 
                 key={song.sid}
-                className="grid grid-cols-12 gap-4 px-6 py-4 items-center text-sm hover:bg-gray-50/50 group transition-colors"
-              >
-                <div className="col-span-1 text-gray-400 group-hover:text-[#6C5CE7] transition-colors">
-                  {index + 1}
-                </div>
-                <div className="col-span-4">
-                  <Link 
-                    href={`/play-song/${song.sid}`}
-                    className="font-medium text-gray-900 hover:text-[#6C5CE7] transition-colors line-clamp-1"
-                  >
-                    {song.name}
-                  </Link>
-                </div>
-                <div className="col-span-3 text-gray-600 line-clamp-1">{song.artist}</div>
-                <div className="col-span-2">
-                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-violet-50 text-violet-600">
-                    {song.genre}
-                  </span>
-                </div>
-                <div className="col-span-1 text-center text-gray-500">
-                  {formatDuration(song.duration)}
-                </div>
-                <div className="col-span-1 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600">
-                    <MoreHorizontal size={16} />
-                  </button>
-                </div>
-              </div>
+                sid={song.sid}
+                index={index}
+              />
             ))}
           </div>
         )}

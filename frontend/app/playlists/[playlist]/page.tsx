@@ -1,8 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { FaArrowLeft, FaLock, FaLockOpen, FaShare, FaTrash } from 'react-icons/fa';
 import PlaylistSongs from '@/components/playlists/PlaylistSongs';
 import { ArrowLeft, Share2, Lock, LockOpen } from 'lucide-react';
 
@@ -14,18 +12,29 @@ interface Playlist {
   shared_with: string | null;
 }
 
+interface Song {
+  sid: string;
+}
+
 export default function PlaylistPage({ params }: { params: { playlist: string } }) {
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
+  const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPlaylist = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/playlists/${params.playlist}`);
+        const response = await fetch(`http://localhost:8000/playlist-songs/${params.playlist}`);
         if (!response.ok) throw new Error('Failed to fetch playlist');
         const data = await response.json();
-        setPlaylist(data);
+        setSongs(data.songs.map((sid: string) => ({ sid })));
+        
+        // Also fetch playlist details
+        const playlistResponse = await fetch(`http://localhost:8000/playlists/${params.playlist}`);
+        if (!playlistResponse.ok) throw new Error('Failed to fetch playlist details');
+        const playlistData = await playlistResponse.json();
+        setPlaylist(playlistData);
       } catch (error) {
         console.error('Error fetching playlist:', error);
         setError('Failed to load playlist');

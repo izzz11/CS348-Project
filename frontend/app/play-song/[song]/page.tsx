@@ -7,8 +7,7 @@ import Link from "next/link";
 export default function PlaySongPage() {
   const params = useParams();
   const slug = params?.song as string;
-  const userId = localStorage.getItem('userId');
-  console.log("userId", userId)
+  const userId = localStorage.getItem('uid');
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <div className="container mx-auto px-4 py-8">

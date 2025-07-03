@@ -15,6 +15,7 @@ type Playlist = {
 };
 
 export default function Playlists() {
+  const uid = localStorage.getItem('uid')
   const router = useRouter();
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,19 +31,19 @@ export default function Playlists() {
   useEffect(() => {
     const fetchPlaylists = async () => {
       try {
-        const uid = localStorage.getItem('uid');
         if (!uid) {
           setError('User not logged in.');
           setLoading(false);
           return;
         }
   
-        const response = await fetch(`/api/playlists?uid=${uid}`);
+        const response = await fetch(`http://localhost:8000/playlists/user/${uid}`);
         if (!response.ok) {
           throw new Error('Failed to fetch playlists');
         }
         const data = await response.json();
         setPlaylists(data);
+        console.log("playlists", data)
         setLoading(false);
       } catch (err) {
         setError('Failed to fetch playlists. Please try again later.');
