@@ -1,8 +1,8 @@
 # CS 348 Project - 🎵 **TuneMatch: A Music-Based Matching App (WIP)**
 
-We’re building **TuneMatch**, a simple app that connects people based on their music taste.
+We’re building **TuneMatch**, a simple app that connects people based on their music taste (kinda like Tinder but for music)
 
-### 🧰 Tech Stack (planned):
+### 🧰 Tech Stack:
 
 * **MySQL** for the database
 * **Fast API** for the backend
@@ -14,12 +14,12 @@ We’re building **TuneMatch**, a simple app that connects people based on their
 
 ### 🔧 Database Setup and Data Loading
 
-The system supports three core tables: `Songs`, `Users`, and `Playlists`.
+The system currently supports three core tables: `Songs`, `Users`, and `Playlists`.
 
 #### 1. **Songs Table**
 - **Source**: Songs are fetched online via the Spotify API or scraped datasets.
 - **Stored Fields**:
-  - `id`, `name`, `artist_name`, `duration`, `file_path` (path to audio URL `.mp3`)
+  - `sid`, `name`, `genre`, `artist`, `duration`, `audio_path`, `audio_download_path`
 - **Sample Data**: Initially, we preload **100 songs** as a test dataset in **Milestone 1**.
 - **Loading Mechanism**:
   - Executing `main.py` will:
@@ -36,8 +36,7 @@ The system supports three core tables: `Songs`, `Users`, and `Playlists`.
 #### 3. **Playlists Table**
 - **Created by users** via the interface when they decide to build custom playlists.
 - **Stored Fields**:
-  - `uid`, `pid`, `name`, `description`, `private`
-  - A junction table handles the association between playlists and songs.
+  - `uid`, `pid`, `name`, `description`, `private`, `shared_with`
 - Users select from the current pool of 100 songs to populate their playlists.
 
 ---
@@ -70,6 +69,10 @@ To launch the full-stack TuneMatch app locally, follow these steps:
    docker-compose up -d
    ```
    to set up mysql local db.
+   If you want to operate the database in command line with MySQL, you can run 
+   ```
+   docker exec -it musicdb mysql -u musicuser -pmusicpass musicdb
+   ```
 
    > Make sure to delete app.db if you want a fresh database
 

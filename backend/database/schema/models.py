@@ -28,27 +28,27 @@ class User(BaseModel):
 # ================ PLAYLIST SCHEMA ================
 class Playlist(BaseModel):
     pid: str
-    uid: str
     name: str
     description: str
     private: bool
-    shared_with: Optional[str] = None
 
 # Request model for creating a playlist
 class PlaylistCreate(BaseModel):
-    uid: str
     name: str
     description: Optional[str] = ""
     private: Optional[bool] = False
-    shared_with: Optional[str] = None
 
 # Request model for updating a playlist
 class PlaylistUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     private: Optional[bool] = None
-    shared_with: Optional[str] = None
-    
+
+# New model for user-playlist relationship
+class UserPlaylist(BaseModel):
+    uid: str
+    pid: str
+    shared_at: Optional[str] = None
 
 # ================ SONG SCHEMA ================
 class SongRead(BaseModel):

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaSignInAlt } from 'react-icons/fa';
 
-export default function SignIn() {
+export default function SignUp() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -18,18 +18,18 @@ export default function SignIn() {
     setSuccess('');
     setLoading(true);
     try {
-      const res = await fetch('/api/users/login', {
+      const res = await fetch('/api/users/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
 
-      if (res.status === 200) {
-        setSuccess('Login successful! Redirecting...');
-        setTimeout(() => router.push('/'), 1500);
+      if (res.status === 201) {
+        setSuccess('Account created! Redirecting to sign in...');
+        setTimeout(() => router.push('/signin'), 1500);
       } else {
         const data = await res.json();
-        setError(data.detail || 'Login failed');
+        setError(data.detail || 'Registration failed');
       }
     } catch (err) {
       setError('Network error. Please try again.');
@@ -63,8 +63,8 @@ export default function SignIn() {
       </div>
       <div className="bg-white/70 backdrop-blur-sm p-12 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 w-full max-w-md mx-4">
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold text-gray-800 mb-3">Sign In to Your Account</h1>
-          <p className="text-gray-600">Welcome back! Please log in.</p>
+          <h1 className="text-3xl font-bold text-gray-800 mb-3">Create Your Account</h1>
+          <p className="text-gray-600">Join our music community today</p>
         </div>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
@@ -125,10 +125,10 @@ export default function SignIn() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span>Signing In...</span>
+                <span>Creating Account...</span>
               </>
             ) : (
-              'Sign In'
+              'Sign Up'
             )}
           </button>
 
@@ -143,12 +143,12 @@ export default function SignIn() {
         </form>
 
         <p className="text-center text-gray-600">
-          Don't have an account?{' '}
+          Already have an account?{' '}
           <Link 
-            href="/signup" 
+            href="/signin" 
             className="text-indigo-600 hover:text-indigo-500 font-medium transition-colors"
           >
-            Sign Up
+            Sign In
           </Link>
         </p>
       </div>

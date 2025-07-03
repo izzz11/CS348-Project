@@ -1,7 +1,5 @@
 -- CREATE TABLES IF THEY DO NOT EXIST
--- Target: SQLite database for a music streaming application
-
--- DROP TABLE IF EXISTS playlist_songs, listened, playlists, filepaths, songs, users;
+-- Target: MySQL database for a music streaming application
 
 CREATE TABLE IF NOT EXISTS users (
     uid VARCHAR(36) PRIMARY KEY,
@@ -25,25 +23,30 @@ CREATE TABLE IF NOT EXISTS songs (
 
 CREATE TABLE IF NOT EXISTS playlists (
     pid VARCHAR(36) PRIMARY KEY,
-    uid VARCHAR(36),
     name VARCHAR(100),
     description TEXT,
-    private BOOLEAN DEFAULT FALSE,
-    shared_with VARCHAR(100),
-    FOREIGN KEY (uid) REFERENCES users(uid)
+    private BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE IF NOT EXISTS listened (
-    id VARCHAR(255) PRIMARY KEY,
-    last_listened TIMESTAMP,
+-- Might need a better name
+CREATE TABLE IF NOT EXISTS user_playlists (
     uid VARCHAR(36),
+    pid VARCHAR(36),
+    shared_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (uid, pid),
+    FOREIGN KEY (uid) REFERENCES users(uid),
+    FOREIGN KEY (pid) REFERENCES playlists(pid)
+);
+
+CREATE TABLE IF NOT EXISTS user_track_actions (
+    uid VARCHAR(36),
+    sid VARCHAR(255),
+    last_listened TIMESTAMP,
     total_plays INT,
     favourite BOOLEAN,
     rating INT,
-    pid VARCHAR(36),
-    sid VARCHAR(36),
+    PRIMARY KEY (uid, sid),
     FOREIGN KEY (uid) REFERENCES users(uid),
-    FOREIGN KEY (pid) REFERENCES playlists(pid),
     FOREIGN KEY (sid) REFERENCES songs(sid)
 );
 
@@ -56,8 +59,5 @@ CREATE TABLE IF NOT EXISTS playlist_songs (
     FOREIGN KEY (sid) REFERENCES songs(sid)
 );
 
-ALTER TABLE users MODIFY uid VARCHAR(36);
-ALTER TABLE playlists MODIFY uid VARCHAR(36);
-ALTER TABLE playlists MODIFY pid VARCHAR(36);
 
 

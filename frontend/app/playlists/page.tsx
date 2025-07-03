@@ -7,11 +7,9 @@ import { FaPlus, FaTrash, FaEdit, FaLock, FaLockOpen, FaMusic, FaHeadphones, FaU
 
 type Playlist = {
   pid: string;
-  uid: string;
   name: string;
   description: string;
   private: boolean;
-  shared_with: string;
 };
 
 export default function Playlists() {
@@ -58,17 +56,15 @@ export default function Playlists() {
     e.preventDefault();
     try {
       const uid = localStorage.getItem('uid');
-      const response = await fetch('/api/playlists', {
+      const response = await fetch(`/api/playlists?uid=${uid}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          uid: uid,
           name: newPlaylist.name,
           description: newPlaylist.description,
           private: newPlaylist.private,
-          shared_with: "abc",
         }),
       });
 
@@ -203,9 +199,7 @@ export default function Playlists() {
                   {/* Bottom Info */}
                   <div className="flex items-center gap-2 text-white/60 text-sm">
                     <FaUsers size={14} />
-                    <span>
-                      {playlist.shared_with ? `${playlist.shared_with.split(',').length} shared users` : '0 shared users'}
-                    </span>
+                    <span>Shared with users</span>
                   </div>
                 </div>
 

@@ -39,6 +39,9 @@ export default function Navbar() {
             <Link href="/playlists" className="text-gray-600 hover:text-indigo-500 transition-colors">
               Playlists
             </Link>
+            <Link href="/match" className="text-gray-600 hover:text-indigo-500 transition-colors">
+              Find a Match
+            </Link>
           </div>
 
           {/* Auth Buttons */}
@@ -63,7 +66,7 @@ export default function Navbar() {
                   Log In
                 </Link>
                 <Link
-                  href="/signin"
+                  href="/signup"
                   className="bg-indigo-500 text-white hover:bg-indigo-600 px-4 py-2 rounded-full 
                            transition-colors text-sm font-medium"
                 >

@@ -12,13 +12,12 @@ router = APIRouter(
 
 # Create
 @router.post("/", response_model=models.Playlist)
-def create_playlist(p: models.PlaylistCreate):
+def create_playlist(uid: str, p: models.PlaylistCreate):
     row = playlist_repo.create_playlist(
-        uid=p.uid,
+        uid=uid,
         name=p.name,
         description=p.description,
-        private=p.private,
-        shared_with=p.shared_with
+        private=p.private
     )
     
     return row
@@ -44,8 +43,7 @@ def update_playlist(pid: str, p: models.PlaylistUpdate):
         pid=pid,
         name=p.name,
         description=p.description,
-        private=p.private,
-        shared_with=p.shared_with
+        private=p.private
     )
     return row  # Already a dict
 
@@ -54,3 +52,18 @@ def update_playlist(pid: str, p: models.PlaylistUpdate):
 def delete_playlist(pid: str):
     playlist_repo.delete_playlist(pid)
     return {"message": f"Playlist {pid} deleted"}
+
+# Share playlist with user
+@router.post("/{pid}/share")
+def share_playlist(pid: str, target_uid: str):
+    try:
+        playlist_repo.share_playlist_with_user(pid, target_uid)
+        return {"message": f"Playlist {pid} shared with user {target_uid}"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+# Get users who have access to a playlist
+@router.get("/{pid}/users", response_model=List[models.UserPlaylist])
+def get_playlist_users(pid: str):
+    rows = playlist_repo.get_playlist_users(pid)
+    return rows

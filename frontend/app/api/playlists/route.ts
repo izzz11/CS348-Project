@@ -21,8 +21,15 @@ export async function GET(request: Request) {
 // Create new playlist
 export async function POST(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const uid = searchParams.get('uid');
+    
+    if (!uid) {
+      return NextResponse.json({ error: 'Missing uid parameter' }, { status: 400 });
+    }
+
     const body = await request.json();
-    const response = await axios.post('http://localhost:8000/playlists/', body);
+    const response = await axios.post(`http://localhost:8000/playlists/?uid=${uid}`, body);
     return NextResponse.json(response.data);
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create playlist' }, { status: 500 });
