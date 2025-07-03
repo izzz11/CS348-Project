@@ -7,26 +7,32 @@ import PlaylistSongItem from './PlaylistSongItem';
 
 interface Song {
   sid: string;
+  name: string;
+  artist: string;
+  genre: string;
+  duration: number;
 }
 
 interface PlaylistSongsProps {
   pid: string;
   playlistName: string;
   description?: string;
+  songs?: Song[];
 }
 
-const PlaylistSongs: React.FC<PlaylistSongsProps> = ({ pid, playlistName, description }) => {
-  const [songs, setSongs] = useState<Song[]>([]);
-  const [loading, setLoading] = useState(true);
+const PlaylistSongs: React.FC<PlaylistSongsProps> = ({ pid, playlistName, description, songs: propSongs }) => {
+  const [songs, setSongs] = useState<Song[]>(propSongs || []);
+  const [loading, setLoading] = useState(!propSongs);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (propSongs) return;
     const fetchSongs = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/playlist-songs/${pid}`);
+        const response = await fetch(`/api/playlist-songs/${pid}`);
         if (!response.ok) throw new Error('Failed to fetch songs');
         const data = await response.json();
-        setSongs(data.songs.map((sid: string) => ({ sid })));
+        setSongs(data.songs);
       } catch (error) {
         console.error('Error fetching songs:', error);
         setError('Failed to load songs');
@@ -34,9 +40,8 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = ({ pid, playlistName, descri
         setLoading(false);
       }
     };
-
     fetchSongs();
-  }, [pid]);
+  }, [pid, propSongs]);
 
   if (loading) {
     return (
@@ -98,7 +103,7 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = ({ pid, playlistName, descri
             {songs.map((song, index) => (
               <PlaylistSongItem 
                 key={song.sid}
-                sid={song.sid}
+                song={song}
                 index={index}
               />
             ))}

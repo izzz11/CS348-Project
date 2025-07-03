@@ -150,42 +150,9 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId, userId }) => {
     }
   }, [volume]);
 
-  const addSongToFavoritePlaylist = async () => {
-    const sid = songData?.sid;
-    const pid = favoritePlaylistId || playlists[0]?.pid;
-
-    if (!pid || !sid) {
-      showToast("Could not find favorite playlist", "error");
-      return;
-    }
-    try {
-      if (isLiked) {
-        // Remove from favorites
-        const response = await fetch(`http://localhost:8000/playlist-songs/${pid}/${sid}`, {
-          method: 'DELETE',
-        });
-        
-        if (!response.ok) throw new Error('Failed to remove from favorites');
-        
-        showToast("Removed from favorites", "success");
-      } else {
-        // Add to favorites
-        await addSongToPlaylist(pid, sid);
-        showToast("Added to favorites", "success");
-      }
-      
-      // Toggle liked state
-      setIsLiked(!isLiked);
-    } catch (error) {
-      console.error('Error updating favorites:', error);
-      showToast("Failed to update favorites", "error");
-    }
-  }
-
-
   const addSongToPlaylist = async (pid: string, sid: string): Promise<boolean> => {
     try {
-      const response = await fetch('http://localhost:8000/playlist-songs/add', {
+      const response = await fetch(`/api/playlist-songs/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -202,6 +169,39 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId, userId }) => {
     } catch (error) {
       console.error('Error adding song to playlist:', error);
       return false;
+    }
+  }
+
+  const addSongToFavoritePlaylist = async () => {
+    const sid = songData?.sid;
+    const pid = favoritePlaylistId || playlists[0]?.pid;
+
+    if (!pid || !sid) {
+      showToast("Could not find favorite playlist", "error");
+      return;
+    }
+    try {
+      if (isLiked) {
+        // Remove from favorites using API route
+        console.log("REMOVING", `/api/playlist-songs/${pid}?sid=${sid}`);
+        const response = await fetch(`/api/playlist-songs/${pid}?sid=${sid}`, {
+          method: 'DELETE',
+        });
+        
+        if (!response.ok) throw new Error('Failed to remove from favorites');
+        
+        showToast("Removed from favorites", "success");
+      } else {
+        // Add to favorites
+        await addSongToPlaylist(pid, sid);
+        showToast("Added to favourites", "success");
+      }
+      
+      // Toggle liked state
+      setIsLiked(!isLiked);
+    } catch (error) {
+      console.error('Error updating favorites:', error);
+      showToast("Failed to update favorites", "error");
     }
   }
 

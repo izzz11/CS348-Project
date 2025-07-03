@@ -24,16 +24,12 @@ export default function PlaylistPage({ params }: { params: { playlist: string } 
   useEffect(() => {
     const fetchPlaylist = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/playlist-songs/${params.playlist}`);
+        // Fetch playlist details and songs from new API route
+        const response = await fetch(`/api/playlists/${params.playlist}`);
         if (!response.ok) throw new Error('Failed to fetch playlist');
         const data = await response.json();
-        setSongs(data.songs.map((sid: string) => ({ sid })));
-        
-        // Also fetch playlist details
-        const playlistResponse = await fetch(`http://localhost:8000/playlists/${params.playlist}`);
-        if (!playlistResponse.ok) throw new Error('Failed to fetch playlist details');
-        const playlistData = await playlistResponse.json();
-        setPlaylist(playlistData);
+        setSongs(data.songs); // data.songs should be an array of song objects
+        setPlaylist(data.playlist); // data.playlist should be the playlist object
       } catch (error) {
         console.error('Error fetching playlist:', error);
         setError('Failed to load playlist');
@@ -109,6 +105,7 @@ export default function PlaylistPage({ params }: { params: { playlist: string } 
           pid={playlist.pid} 
           playlistName={playlist.name}
           description={playlist.description}
+          songs={songs} // Pass the full song objects
         />
       </div>
     </div>
