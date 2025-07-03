@@ -4,6 +4,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FaPlus, FaTrash, FaEdit, FaLock, FaLockOpen, FaMusic, FaHeadphones, FaUsers } from 'react-icons/fa';
+import { useAuth } from '../../lib/AuthContext';
 
 type Playlist = {
   pid: string;
@@ -13,7 +14,8 @@ type Playlist = {
 };
 
 export default function Playlists() {
-  const uid = localStorage.getItem('uid')
+  const { user } = useAuth();
+
   const router = useRouter();
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,19 +31,16 @@ export default function Playlists() {
   useEffect(() => {
     const fetchPlaylists = async () => {
       try {
-        if (!uid) {
-          setError('User not logged in.');
-          setLoading(false);
-          return;
+        if (!user?.uid) {
+          return; // Wait for user to be loaded
         }
   
-        const response = await fetch(`http://localhost:8000/playlists/user/${uid}`);
+        const response = await fetch(`http://localhost:8000/playlists/user/${user.uid}`);
         if (!response.ok) {
           throw new Error('Failed to fetch playlists');
         }
         const data = await response.json();
         setPlaylists(data);
-        console.log("playlists", data)
         setLoading(false);
       } catch (err) {
         setError('Failed to fetch playlists. Please try again later.');
@@ -49,14 +48,23 @@ export default function Playlists() {
       }
     };
   
-    fetchPlaylists();
-  }, []);
+    console.log(user)
+    if (user) {
+      fetchPlaylists();
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
 
   const handleCreatePlaylist = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const uid = localStorage.getItem('uid');
-      const response = await fetch(`/api/playlists?uid=${uid}`, {
+      if (!user?.uid) {
+        setError('User not logged in.');
+        return;
+      }
+      
+      const response = await fetch(`/api/playlists?uid=${user.uid}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -66,6 +74,7 @@ export default function Playlists() {
           description: newPlaylist.description,
           private: newPlaylist.private,
         }),
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -86,6 +95,7 @@ export default function Playlists() {
     try {
       const response = await fetch(`/api/playlists?pid=${pid}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!response.ok) {

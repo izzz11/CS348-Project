@@ -1,8 +1,9 @@
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { FaSignInAlt } from 'react-icons/fa';
+import { useAuth } from '../../lib/AuthContext';
 
 export default function SignUp() {
   const [username, setUsername] = useState('');
@@ -11,6 +12,17 @@ export default function SignUp() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/signin';
+  const { user, refreshUser } = useAuth();
+
+  useEffect(() => {
+    // Check if already authenticated
+    if (user) {
+      // Already logged in, redirect to home
+      router.push('/');
+    }
+  }, [user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,11 +34,16 @@ export default function SignUp() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
+        credentials: 'include',
       });
 
       if (res.status === 201) {
         setSuccess('Account created! Redirecting to sign in...');
-        setTimeout(() => router.push('/signin'), 1500);
+        
+        // Try to refresh user state in case auto-login is implemented
+        await refreshUser();
+        
+        setTimeout(() => router.push('/signin'), 1000);
       } else {
         const data = await res.json();
         setError(data.detail || 'Registration failed');

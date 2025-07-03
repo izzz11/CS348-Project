@@ -10,8 +10,7 @@ export async function GET(request: Request) {
 
   try {
     const res = await fetch(`http://localhost:8000/songs/fetch-song?sid=${songId}`);
-    console.log('Fetching song from API:', songId);
-    console.log('Response:', res);
+  
     if (!res.ok) {
       return NextResponse.json({ error: 'Failed to fetch song' }, { status: res.status });
     }

@@ -158,7 +158,6 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId, userId }) => {
       showToast("Could not find favorite playlist", "error");
       return;
     }
-    console.log("likedStatus", isLiked)
     try {
       if (isLiked) {
         // Remove from favorites
@@ -194,13 +193,11 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId, userId }) => {
         body: JSON.stringify({ pid, sid })
       });
       
-      console.log("response", response)
       if (!response.ok) {
         throw new Error('Failed to add song to playlist');
       }
       
       const data = await response.json();
-      console.log("data", data)
       return true;
     } catch (error) {
       console.error('Error adding song to playlist:', error);

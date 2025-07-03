@@ -1,8 +1,10 @@
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { FaSignInAlt } from 'react-icons/fa';
+import { useAuth } from '../../lib/AuthContext';
+import { notifyAuthChange } from '../../lib/auth';
 
 export default function SignIn() {
   const [username, setUsername] = useState('');
@@ -11,6 +13,17 @@ export default function SignIn() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/';
+  const { user, refreshUser } = useAuth();
+
+  useEffect(() => {
+    // Check if already authenticated
+    if (user) {
+      // Already logged in, redirect
+      router.push(callbackUrl);
+    }
+  }, [user, callbackUrl, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,13 +35,26 @@ export default function SignIn() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
+        credentials: 'include',
       });
+
+      const data = await res.json();
 
       if (res.status === 200) {
         setSuccess('Login successful! Redirecting...');
-        setTimeout(() => router.push('/'), 1500);
+        
+        // Manually update auth context with the returned user data
+        if (data.user) {
+          // Force refresh the auth context with the new user data
+          await refreshUser();
+          
+          // Notify other tabs/windows about the auth change
+          notifyAuthChange();
+        }
+        
+        // Navigate to the callback URL after a short delay
+        setTimeout(() => router.push(callbackUrl), 500);
       } else {
-        const data = await res.json();
         setError(data.detail || 'Login failed');
       }
     } catch (err) {

@@ -2,22 +2,31 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FaMusic } from 'react-icons/fa';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useAuth, AUTH_STATE_CHANGE_EVENT } from '../../lib/AuthContext';
 
 export default function Navbar() {
   const router = useRouter();
-  const [username, setUsername] = useState<string | null>(null);
+  const { user, loading, logout, refreshUser } = useAuth();
 
+  // Listen for auth state changes
   useEffect(() => {
-    // Check if user is logged in
-    const storedUsername = localStorage.getItem('username');
-    setUsername(storedUsername);
-  }, []);
+    const handleAuthChange = () => {
+      // Refresh user data when auth state changes
+      refreshUser();
+    };
 
-  const handleLogout = () => {
-    localStorage.removeItem('uid');
-    localStorage.removeItem('username');
-    setUsername(null);
+    // Add event listener for auth state changes
+    window.addEventListener(AUTH_STATE_CHANGE_EVENT, handleAuthChange);
+
+    return () => {
+      // Clean up event listener
+      window.removeEventListener(AUTH_STATE_CHANGE_EVENT, handleAuthChange);
+    };
+  }, [refreshUser]);
+
+  const handleLogout = async () => {
+    await logout();
     router.push('/');
   };
 
@@ -46,9 +55,11 @@ export default function Navbar() {
 
           {/* Auth Buttons */}
           <div className="flex items-center space-x-4">
-            {username ? (
+            {loading ? (
+              <div className="h-8 w-24 bg-gray-200 animate-pulse rounded-full"></div>
+            ) : user ? (
               <div className="flex items-center space-x-4">
-                <span className="text-gray-600">Welcome, {username}</span>
+                <span className="text-gray-600">Welcome, {user.username}</span>
                 <button
                   onClick={handleLogout}
                   className="bg-white text-indigo-500 hover:text-indigo-600 px-4 py-2 rounded-full border border-indigo-100 
@@ -60,7 +71,7 @@ export default function Navbar() {
             ) : (
               <div className="flex items-center space-x-3">
                 <Link
-                  href="/login"
+                  href="/signin"
                   className="text-gray-600 hover:text-indigo-500 transition-colors text-sm font-medium"
                 >
                   Log In
