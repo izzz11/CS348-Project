@@ -17,7 +17,6 @@ interface Playlist {
   name: string;
   description: string;
   private: boolean;
-  shared_with: string | null;
 }
 
 interface MusicInterfaceProps {

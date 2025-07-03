@@ -31,8 +31,7 @@ ALTER TABLE songs
 -- Playlists table constraints
 ALTER TABLE playlists
     ADD CONSTRAINT check_playlist_name CHECK (LENGTH(name) > 0),
-    ADD CONSTRAINT check_description CHECK (LENGTH(description) <= 1000),
-    ADD CONSTRAINT fk_user FOREIGN KEY(uid) REFERENCES users(uid);
+    ADD CONSTRAINT check_description CHECK (LENGTH(description) <= 1000);
 
 -- User track actions table constraints
 ALTER TABLE user_track_actions
