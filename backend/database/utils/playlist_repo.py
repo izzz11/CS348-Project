@@ -2,7 +2,7 @@ from database.db import run
 import uuid
 
 # 1️⃣ Create playlist and associate with user
-def create_playlist(uid: str, name: str, description: str = "", private: bool = False):
+def create_playlist(uid: str, name: str, description: str = "", private: bool = False, is_favourite: bool = False):
     pid = str(uuid.uuid4())
     
     # ✅ Check if user exists before inserting playlist
@@ -24,30 +24,32 @@ def create_playlist(uid: str, name: str, description: str = "", private: bool = 
     }
     run(sql_insert_playlist, playlist_params)
 
-    # Associate playlist with user
+    # Associate playlist with user, including is_favourite
     sql_insert_user_playlist = """
-    INSERT INTO user_playlists (uid, pid)
-    VALUES (:uid, :pid)
+    INSERT INTO user_playlists (uid, pid, is_favourite)
+    VALUES (:uid, :pid, :is_favourite)
     """
     user_playlist_params = {
         "uid": uid,
-        "pid": pid
+        "pid": pid,
+        "is_favourite": is_favourite
     }
     run(sql_insert_user_playlist, user_playlist_params)
 
-    # ✅ Return the created playlist
+    # ✅ Return the created playlist, including is_favourite
     sql_select = """
-    SELECT pid, name, description, private
-    FROM playlists
-    WHERE pid = :pid
+    SELECT p.pid, p.name, p.description, p.private, up.is_favourite
+    FROM playlists p
+    JOIN user_playlists up ON p.pid = up.pid
+    WHERE p.pid = :pid AND up.uid = :uid
     """
-    row = run(sql_select, {"pid": pid}, fetchone=True)
+    row = run(sql_select, {"pid": pid, "uid": uid}, fetchone=True)
     return row
 
 # 2️⃣ Read all playlists by user
 def get_playlists_by_uid(uid: str):
     sql = """
-    SELECT p.pid, p.name, p.description, p.private
+    SELECT p.pid, p.name, p.description, p.private, up.is_favourite
     FROM playlists p
     JOIN user_playlists up ON p.pid = up.pid
     WHERE up.uid = :uid
@@ -144,3 +146,23 @@ def get_playlist_users(pid: str):
     """
     rows = run(sql, {"pid": pid}, fetch=True)
     return rows
+
+# 8️⃣ Get all favourite playlists for a user
+def get_favourite_playlists_by_user(uid: str):
+    sql = """
+    SELECT p.pid, p.name, p.description, p.private, up.is_favourite
+    FROM playlists p
+    JOIN user_playlists up ON p.pid = up.pid
+    WHERE up.uid = :uid AND up.is_favourite = TRUE
+    """
+    rows = run(sql, {"uid": uid}, fetch=True)
+    return rows
+
+# 9️⃣ Update is_favourite for a playlist-user pair
+def set_playlist_favourite(uid: str, pid: str, is_favourite: bool):
+    sql = """
+    UPDATE user_playlists
+    SET is_favourite = :is_favourite
+    WHERE uid = :uid AND pid = :pid
+    """
+    run(sql, {"uid": uid, "pid": pid, "is_favourite": is_favourite})

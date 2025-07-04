@@ -8,9 +8,11 @@ import PlaylistSongItem from './PlaylistSongItem';
 interface Song {
   sid: string;
   name: string;
-  artist: string;
   genre: string;
+  artist: string;
   duration: number;
+  audio_path: string;
+  audio_download_path: string;
 }
 
 interface PlaylistSongsProps {
@@ -20,45 +22,7 @@ interface PlaylistSongsProps {
   songs?: Song[];
 }
 
-const PlaylistSongs: React.FC<PlaylistSongsProps> = ({ pid, playlistName, description, songs: propSongs }) => {
-  const [songs, setSongs] = useState<Song[]>(propSongs || []);
-  const [loading, setLoading] = useState(!propSongs);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (propSongs) return;
-    const fetchSongs = async () => {
-      try {
-        const response = await fetch(`/api/playlist-songs/${pid}`);
-        if (!response.ok) throw new Error('Failed to fetch songs');
-        const data = await response.json();
-        setSongs(data.songs);
-      } catch (error) {
-        console.error('Error fetching songs:', error);
-        setError('Failed to load songs');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchSongs();
-  }, [pid, propSongs]);
-
-  if (loading) {
-    return (
-      <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6C5CE7] mx-auto"></div>
-        <p className="mt-4 text-gray-600">Loading songs...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-8 text-red-500 bg-white rounded-xl shadow-lg p-6">
-        {error}
-      </div>
-    );
-  }
+const PlaylistSongs: React.FC<PlaylistSongsProps> = ({ pid, playlistName, description, songs }) => {
 
   return (
     <div className="space-y-6">
@@ -73,7 +37,7 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = ({ pid, playlistName, descri
           <div className="flex items-center gap-4 text-gray-500">
             <div className="flex items-center gap-2">
               <Music size={18} />
-              <span>{songs.length} songs</span>
+              <span>{songs?.length} songs</span>
             </div>
           </div>
         </div>
@@ -81,7 +45,7 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = ({ pid, playlistName, descri
 
       {/* Songs List */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        {songs.length === 0 ? (
+        {songs?.length === 0 ? (
           <div className="text-center py-16">
             <Music className="h-16 w-16 mx-auto mb-4 text-gray-400 opacity-80" />
             <h3 className="text-xl font-semibold mb-2 text-gray-800">No Songs Yet</h3>
@@ -100,7 +64,7 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = ({ pid, playlistName, descri
             </div>
 
             {/* Songs */}
-            {songs.map((song, index) => (
+            {songs?.map((song, index) => (
               <PlaylistSongItem 
                 key={song.sid}
                 song={song}

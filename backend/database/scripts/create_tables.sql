@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS playlists (
 CREATE TABLE IF NOT EXISTS user_playlists (
     uid VARCHAR(36),
     pid VARCHAR(36),
+    is_favourite BOOLEAN DEFAULT FALSE,
     shared_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (uid, pid),
     FOREIGN KEY (uid) REFERENCES users(uid),

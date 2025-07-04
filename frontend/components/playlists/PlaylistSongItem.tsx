@@ -7,9 +7,11 @@ import { Play, MoreHorizontal } from 'lucide-react';
 interface Song {
   sid: string;
   name: string;
-  artist: string;
   genre: string;
+  artist: string;
   duration: number;
+  audio_path: string;
+  audio_download_path: string;
 }
 
 interface PlaylistSongItemProps {

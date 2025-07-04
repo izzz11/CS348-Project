@@ -18,6 +18,7 @@ interface Playlist {
   name: string;
   description: string;
   private: boolean;
+  is_favourite: boolean;
 }
 
 interface MusicInterfaceProps {
@@ -123,15 +124,37 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId, userId }) => {
         if (!res.ok) throw new Error('Failed to check favorite status');
         const data = await res.json();
         setIsLiked(data.inFavorites);
-        setFavoritePlaylistId(data.favoritePlaylistId);
       } catch (error) {
         console.error('Error checking favorite status:', error);
       }
     };
+
+    const getFavouritePlaylistID = async () => {
+      try {
+        if (!userId) return;
+        
+        const response = await fetch(`/api/playlists?uid=${userId}`);
+        if (!response.ok) throw new Error('Failed to fetch playlists');
+        const data = await response.json();
+        
+        // Filter for the playlist with is_favourite = true
+        const favoritePlaylist = data.find((playlist: Playlist) => playlist.is_favourite === true);
+        
+        if (favoritePlaylist) {
+          setFavoritePlaylistId(favoritePlaylist.pid);
+        }
+      } catch (error) {
+        console.error('Error getting favorite playlist ID:', error);
+      }
+    }
+
+    // slow but whatever
+
     
     fetchUserPlaylists();
     fetchSongData();
     checkFavoriteStatus();
+    getFavouritePlaylistID();
 
     // Cleanup function
     return () => {
@@ -183,7 +206,6 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId, userId }) => {
     try {
       if (isLiked) {
         // Remove from favorites using API route
-        console.log("REMOVING", `/api/playlist-songs/${pid}?sid=${sid}`);
         const response = await fetch(`/api/playlist-songs/${pid}?sid=${sid}`, {
           method: 'DELETE',
         });

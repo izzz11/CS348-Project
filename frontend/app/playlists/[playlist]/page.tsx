@@ -13,6 +13,12 @@ interface Playlist {
 
 interface Song {
   sid: string;
+  name: string;
+  genre: string;
+  artist: string;
+  duration: number;
+  audio_path: string;
+  audio_download_path: string;
 }
 
 export default function PlaylistPage({ params }: { params: { playlist: string } }) {
@@ -25,11 +31,16 @@ export default function PlaylistPage({ params }: { params: { playlist: string } 
     const fetchPlaylist = async () => {
       try {
         // Fetch playlist details and songs from new API route
-        const response = await fetch(`/api/playlists/${params.playlist}`);
-        if (!response.ok) throw new Error('Failed to fetch playlist');
-        const data = await response.json();
-        setSongs(data.songs); // data.songs should be an array of song objects
-        setPlaylist(data.playlist); // data.playlist should be the playlist object
+        const playlistInfo = await fetch(`/api/playlists/${params.playlist}`);
+        if (!playlistInfo.ok) throw new Error('Failed to fetch playlist');
+        const playlistInfoData = await playlistInfo.json();
+        setPlaylist(playlistInfoData.playlist); // data.playlist should be the playlist object
+
+        const songsInfo = await fetch(`/api/playlist-songs/${params.playlist}`);
+        if (!songsInfo.ok) throw new Error('Failed to fetch songs data');
+        const songsInfoData = await songsInfo.json();
+        setSongs(songsInfoData.songs); // data.songs should be an array of song objects
+        
       } catch (error) {
         console.error('Error fetching playlist:', error);
         setError('Failed to load playlist');

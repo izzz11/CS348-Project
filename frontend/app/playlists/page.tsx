@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FaPlus, FaTrash, FaEdit, FaLock, FaLockOpen, FaMusic, FaHeadphones, FaUsers } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaEdit, FaLock, FaLockOpen, FaMusic, FaHeadphones, FaUsers, FaHeart } from 'react-icons/fa';
 import { useAuth } from '../../lib/AuthContext';
 
 type Playlist = {
@@ -11,6 +11,7 @@ type Playlist = {
   name: string;
   description: string;
   private: boolean;
+  is_favourite: boolean;
 };
 
 export default function Playlists() {
@@ -35,12 +36,17 @@ export default function Playlists() {
           return; // Wait for user to be loaded
         }
   
-        const response = await fetch(`http://localhost:8000/playlists/user/${user.uid}`);
+        // Use the local API route instead of the backend endpoint
+        const response = await fetch(`/api/playlists?uid=${user.uid}`);
         if (!response.ok) {
           throw new Error('Failed to fetch playlists');
         }
         const data = await response.json();
-        setPlaylists(data);
+        // Sort so that the playlist with is_favourite === true is at the beginning
+        const sortedData = Array.isArray(data)
+          ? [...data].sort((a, b) => (b.is_favourite ? 1 : 0) - (a.is_favourite ? 1 : 0))
+          : data;
+        setPlaylists(sortedData);
         setLoading(false);
       } catch (err) {
         setError('Failed to fetch playlists. Please try again later.');
@@ -48,11 +54,8 @@ export default function Playlists() {
       }
     };
   
-    console.log(user)
     if (user) {
       fetchPlaylists();
-    } else {
-      setLoading(false);
     }
   }, [user]);
 
@@ -103,6 +106,7 @@ export default function Playlists() {
       }
 
       setPlaylists(playlists.filter(p => p.pid !== pid));
+      
     } catch (err) {
       setError('Failed to delete playlist. Please try again.');
     }
@@ -188,7 +192,7 @@ export default function Playlists() {
                         ) : (
                           <FaLockOpen className="text-white/80" size={16} />
                         )}
-                        {playlist.name !== 'My Favourites' && (
+                        {!playlist.is_favourite ? (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -198,6 +202,8 @@ export default function Playlists() {
                           >
                             <FaTrash size={16} />
                           </button>
+                        ) : (
+                          <FaHeart size={16} className='text-red-300' />
                         )}
                       </div>
                     </div>

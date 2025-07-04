@@ -6,7 +6,6 @@ def get_all_users():
     FROM users
     """
     result = run(sql, fetch=True)
-    print("result", result)
     return result
 
 
