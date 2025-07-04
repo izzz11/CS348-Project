@@ -48,7 +48,7 @@ const BackgroundDecoration = () => (
 
 // Hero Section Component
 const HeroSection = ({ isPlaying, setIsPlaying }: { isPlaying: boolean; setIsPlaying: (value: boolean) => void }) => (
-  <section className="flex flex-col items-center justify-center min-h-[85vh] text-center max-w-5xl mx-auto px-4 pt-20">
+  <section className="flex flex-col items-center justify-center min-h-[85vh] text-center max-w-6xl mx-auto px-4 pt-20">
     <h1 className="text-6xl md:text-7xl font-bold mb-8 text-gray-800 tracking-tight">
       Your Music, Your Way
     </h1>
@@ -90,7 +90,7 @@ const FeaturesSection = () => {
   ];
 
   return (
-    <section className="max-w-7xl mx-auto px-8 py-20">
+    <section className="max-w-full mx-auto px-4 py-20">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
         {features.map((feature, index) => (
           <FeatureCard key={index} {...feature} />

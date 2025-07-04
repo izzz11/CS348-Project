@@ -122,13 +122,9 @@ export default function Songs() {
         <meta name="description" content="Browse and discover songs" />
       </Head>
       <main className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex items-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800">Song Database</h1>
-          <Link href="/">
-            <button className="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-2 rounded-full transition-colors shadow-sm hover:shadow-md">
-              Back to Home
-            </button>
-          </Link>
+          
         </div>
         {/* Search Bar */}
         <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-center gap-3 mb-6">

@@ -26,7 +26,7 @@ export default function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-full mx-auto px-2 sm:px-3 lg:px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo and Brand */}
           <Link href="/" className="flex items-center space-x-3">
@@ -53,7 +53,7 @@ export default function Navbar() {
               <div className="h-8 w-24 bg-gray-200 animate-pulse rounded-full"></div>
             ) : user ? (
               <div className="flex items-center space-x-4">
-                <span className="text-gray-600">Welcome, {user.username}</span>
+                <Link href="/profile" className="text-gray-600 hover:text-indigo-500 transition-colors">Welcome, {user.username}</Link>
                 <button
                   onClick={handleLogout}
                   className="bg-white text-indigo-500 hover:text-indigo-600 px-4 py-2 rounded-full border border-indigo-100 

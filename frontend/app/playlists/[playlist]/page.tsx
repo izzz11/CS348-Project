@@ -35,9 +35,10 @@ export default function PlaylistPage({ params }: { params: { playlist: string } 
         if (!playlistInfo.ok) throw new Error('Failed to fetch playlist');
         const playlistInfoData = await playlistInfo.json();
         setPlaylist(playlistInfoData.playlist); // data.playlist should be the playlist object
-
+        console.log("playlistInfoData", playlistInfoData);
         const songsInfo = await fetch(`/api/playlist-songs/${params.playlist}`);
         if (!songsInfo.ok) throw new Error('Failed to fetch songs data');
+        console.log("songsInfo", songsInfo);
         const songsInfoData = await songsInfo.json();
         setSongs(songsInfoData.songs); // data.songs should be an array of song objects
         
