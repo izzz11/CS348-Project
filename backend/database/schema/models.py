@@ -16,6 +16,16 @@ class UserLogin(BaseModel):
 class UserRead(BaseModel):
     uid: str
     username: str
+    email: Optional[str] = None
+    age: Optional[int] = None
+    country: Optional[str] = None
+
+# Request schema for updating user profile
+class UserUpdate(BaseModel):
+    username: Optional[str] = None
+    email: Optional[str] = None
+    age: Optional[int] = None
+    country: Optional[str] = None
 
 # Optional: for internal use or updates
 class User(BaseModel):
@@ -27,6 +37,12 @@ class User(BaseModel):
 
 # ================ PLAYLIST SCHEMA ================
 class Playlist(BaseModel):
+    pid: str
+    name: str
+    description: str
+    private: bool
+
+class PlaylistFetch(BaseModel):
     pid: str
     name: str
     description: str
