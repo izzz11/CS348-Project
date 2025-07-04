@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { FaPlay, FaMusic, FaHeadphones } from 'react-icons/fa';
+import { FaPlay, FaMusic, FaHeadphones, FaHeart, FaUsers, FaUserFriends } from 'react-icons/fa';
 import Link from 'next/link';
 import "../globals.css";
 import Navbar from './components/Navbar';
@@ -50,18 +50,27 @@ const BackgroundDecoration = () => (
 const HeroSection = ({ isPlaying, setIsPlaying }: { isPlaying: boolean; setIsPlaying: (value: boolean) => void }) => (
   <section className="flex flex-col items-center justify-center min-h-[85vh] text-center max-w-5xl mx-auto px-4 pt-20">
     <h1 className="text-6xl md:text-7xl font-bold mb-8 text-gray-800 tracking-tight">
-      Your Music, Your Way
+      Find Your Music Soulmate
     </h1>
-    <p className="text-xl md:text-2xl text-gray-600 mb-12 leading-relaxed max-w-2xl">
-      Discover, stream, and share your favorite music with our revolutionary platform
+    <p className="text-xl md:text-2xl text-gray-600 mb-12 leading-relaxed max-w-3xl">
+      Discover, stream, and match with music lovers who share your taste. 
+      Like Tinder, but for finding your perfect listening buddy.
     </p>
-    <button
-      onClick={() => setIsPlaying(!isPlaying)}
-      className="group flex items-center space-x-3 bg-indigo-500 hover:bg-indigo-600 text-white px-10 py-4 rounded-full text-lg font-medium shadow-sm hover:shadow-md transition-all duration-300"
-    >
-      <FaPlay className={`${isPlaying ? 'hidden' : 'block'} group-hover:scale-110 transition-transform`} />
-      <span>{isPlaying ? 'Pause' : 'Start Listening'}</span>
-    </button>
+    <div className="flex flex-col sm:flex-row gap-4">
+      <button
+        onClick={() => setIsPlaying(!isPlaying)}
+        className="group flex items-center justify-center space-x-3 bg-indigo-500 hover:bg-indigo-600 text-white px-10 py-4 rounded-full text-lg font-medium shadow-sm hover:shadow-md transition-all duration-300"
+      >
+        <FaPlay className={`${isPlaying ? 'hidden' : 'block'} group-hover:scale-110 transition-transform`} />
+        <span>{isPlaying ? 'Pause' : 'Start Listening'}</span>
+      </button>
+      <Link href="/match">
+        <button className="group flex items-center justify-center space-x-3 bg-pink-500 hover:bg-pink-600 text-white px-10 py-4 rounded-full text-lg font-medium shadow-sm hover:shadow-md transition-all duration-300">
+          <FaHeart className="group-hover:scale-110 transition-transform" />
+          <span>Find Matches</span>
+        </button>
+      </Link>
+    </div>
   </section>
 );
 
@@ -69,11 +78,23 @@ const HeroSection = ({ isPlaying, setIsPlaying }: { isPlaying: boolean; setIsPla
 const FeaturesSection = () => {
   const features: FeatureCardProps[] = [
     {
+      icon: <FaHeart />,
+      title: "Match & Connect",
+      description: "Swipe through music lovers and find your perfect listening buddy based on shared taste",
+      buttonText: "Start Matching",
+      buttonLink: "/match"
+    },
+    {
       icon: <FaMusic />,
       title: "Discover Music",
       description: "Explore millions of tracks and find your next favorite song",
       buttonText: "Browse Songs",
       buttonLink: "/songs"
+    },
+    {
+      icon: <FaUsers />,
+      title: "Listen Together",
+      description: "Create shared playlists and enjoy music with your matched buddies in real-time"
     },
     {
       icon: <FaHeadphones />,
@@ -83,15 +104,20 @@ const FeaturesSection = () => {
     {
       icon: <FaPlay />,
       title: "Create Playlists",
-      description: "Build and share your perfect playlists with friends",
+      description: "Build and share your perfect playlists with friends and matches",
       buttonText: "My Playlists",
       buttonLink: "/playlists"
+    },
+    {
+      icon: <FaUserFriends />,
+      title: "Music Communities",
+      description: "Join genre-based communities and connect with like-minded music enthusiasts"
     }
   ];
 
   return (
     <section className="max-w-7xl mx-auto px-8 py-20">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
         {features.map((feature, index) => (
           <FeatureCard key={index} {...feature} />
         ))}
@@ -99,6 +125,30 @@ const FeaturesSection = () => {
     </section>
   );
 };
+
+// Footer Component
+const Footer = () => (
+  <footer className="bg-white/50 backdrop-blur-sm border-t border-gray-100 py-12 mt-20">
+    <div className="max-w-7xl mx-auto px-8 text-center">
+      <div className="flex flex-col items-center space-y-4">
+        <div className="bg-gradient-to-r from-indigo-500 to-pink-500 bg-clip-text text-transparent">
+          <p className="text-xl font-semibold">
+            Developed with ❤️ by
+          </p>
+          <div className="flex flex-wrap justify-center gap-4 mt-2 text-lg font-medium">
+            <span className="hover:scale-105 transition-transform duration-200">Benny</span>
+            <span className="hover:scale-105 transition-transform duration-200">Steve</span>
+            <span className="hover:scale-105 transition-transform duration-200">Isabelle</span>
+            <span className="hover:scale-105 transition-transform duration-200">Eloise</span>
+          </div>
+        </div>
+        <p className="text-sm text-gray-500 mt-4">
+          cooooool (update me) ✨
+        </p>
+      </div>
+    </div>
+  </footer>
+);
 
 // Main Component
 export default function Home() {
@@ -112,6 +162,7 @@ export default function Home() {
         <HeroSection isPlaying={isPlaying} setIsPlaying={setIsPlaying} />
         <FeaturesSection />
       </main>
+      <Footer />
     </div>
   );
 } 
