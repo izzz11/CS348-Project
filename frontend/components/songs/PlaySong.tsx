@@ -120,10 +120,10 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId, userId }) => {
       if (!userId) return;
       
       try {
-        const res = await fetch(`/api/playlist-songs/check-favorite?uid=${userId}&sid=${songId}`);
+        const res = await fetch(`/api/song/is-favourite?uid=${userId}&sid=${songId}`);
         if (!res.ok) throw new Error('Failed to check favorite status');
         const data = await res.json();
-        setIsLiked(data.inFavorites);
+        setIsLiked(data.is_favourite);
       } catch (error) {
         console.error('Error checking favorite status:', error);
       }
@@ -195,6 +195,27 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId, userId }) => {
     }
   }
 
+  const toggleFavourite = async (uid: string, sid: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`/api/song/toggle-favourite?uid=${uid}&sid=${sid}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to toggle favourite status');
+      }
+      
+      const data = await response.json();
+      return true;
+    } catch (error) {
+      console.error('Error toggling favourite status:', error);
+      return false;
+    }
+  }
+
   const addSongToFavoritePlaylist = async () => {
     const sid = songData?.sid;
     const pid = favoritePlaylistId || playlists[0]?.pid;
@@ -210,12 +231,14 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId, userId }) => {
           method: 'DELETE',
         });
         
+        await toggleFavourite(userId, sid);
         if (!response.ok) throw new Error('Failed to remove from favorites');
         
         showToast("Removed from favorites", "success");
       } else {
         // Add to favorites
         await addSongToPlaylist(pid, sid);
+        await toggleFavourite(userId, sid);
         showToast("Added to favourites", "success");
       }
       
@@ -583,23 +606,10 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId, userId }) => {
                                 if (!songData) return;
                                 const success = await addSongToPlaylist(playlist.pid, songData.sid);
                                 if (success) {
-                                  // Show green success notification at the top of the screen
-                                  const notificationElement = document.createElement('div');
-                                  notificationElement.className = 'fixed top-0 left-0 right-0 bg-green-500 text-white p-4 flex justify-between items-center';
-                                  notificationElement.innerHTML = `
-                                    <span>Added to favorites</span>
-                                    <button class="text-white">&times;</button>
-                                  `;
-                                  document.body.appendChild(notificationElement);
-                                  
-                                  // Remove after 3 seconds
-                                  setTimeout(() => {
-                                    document.body.removeChild(notificationElement);
-                                  }, 3000);
-                                  
-                                  setShowPlaylists(false);
-                                } else {
-                                  showToast('Failed to add to playlist', 'error');
+                                  showToast("Added to playlist", "success");
+                                }
+                                else {
+                                  showToast("Could not add to playlist", "error");
                                 }
                               }}
                               className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors duration-150

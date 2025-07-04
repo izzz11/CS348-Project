@@ -24,7 +24,7 @@ def create_playlist(uid: str, p: models.PlaylistCreate):
     return row
 
 # Get all playlists for a user
-@router.get("/user/{uid}", response_model=List[models.Playlist])
+@router.get("/user/{uid}", response_model=List[models.PlaylistFetch])
 def get_playlists(uid: str):
     rows = playlist_repo.get_playlists_by_uid(uid)
     return rows  # Already list of dicts

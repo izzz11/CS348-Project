@@ -31,6 +31,12 @@ class Playlist(BaseModel):
     name: str
     description: str
     private: bool
+
+class PlaylistFetch(BaseModel):
+    pid: str
+    name: str
+    description: str
+    private: bool
     is_favourite: bool
 
 # Request model for creating a playlist
@@ -66,3 +72,26 @@ class SongRead(BaseModel):
 class PlaylistSongCreate(BaseModel):
     pid: str
     sid: str
+
+# ================ USER TRACK ACTIONS SCHEMA ================
+class UserTrackActionCreate(BaseModel):
+    uid: str
+    sid: str
+    last_listened: Optional[str] = None
+    total_plays: Optional[int] = 0
+    favourite: Optional[bool] = False
+    rating: Optional[int] = None
+
+class UserTrackActionUpdate(BaseModel):
+    last_listened: Optional[str] = None
+    total_plays: Optional[int] = None
+    favourite: Optional[bool] = None
+    rating: Optional[int] = None
+
+class UserTrackActionRead(BaseModel):
+    uid: str
+    sid: str
+    last_listened: Optional[str] = None
+    total_plays: int
+    favourite: bool
+    rating: Optional[int] = None

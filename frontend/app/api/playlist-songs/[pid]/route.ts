@@ -35,6 +35,7 @@ export async function DELETE(
   const { searchParams } = new URL(request.url);
   const sid = searchParams.get('sid');
 
+
   if (!pid || !sid) {
     return NextResponse.json({ error: 'Missing playlist ID or song ID' }, { status: 400 });
   }
