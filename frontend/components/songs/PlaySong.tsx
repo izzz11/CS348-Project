@@ -231,7 +231,7 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId, userId }) => {
           method: 'DELETE',
         });
         
-        await toggleFavourite(userId, sid);
+        const newIsLiked = await toggleFavourite(userId, sid);
         if (!response.ok) throw new Error('Failed to remove from favorites');
         
         showToast("Removed from favorites", "success");
