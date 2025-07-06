@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     // Call the backend API to toggle the favourite status
     const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
     const response = await fetch(
-      `${backendUrl}/user-actions/${uid}/${sid}/favourite`,
+      `${backendUrl}/user-actions/${uid}/${sid}/toggle-favourite`,
       {
         method: 'POST',
         headers: {

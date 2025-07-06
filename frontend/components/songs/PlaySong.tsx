@@ -237,7 +237,6 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId, userId }) => {
         showToast("Removed from favorites", "success");
       } else {
         // Add to favorites
-        await addSongToPlaylist(pid, sid);
         await toggleFavourite(userId, sid);
         showToast("Added to favourites", "success");
       }
