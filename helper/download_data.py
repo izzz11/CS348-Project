@@ -6,8 +6,8 @@ import csv
 # ──────────────────────────────────────────────────────────────
 # CONFIGURATION
 CLIENT_ID = "c538f291"
-TAGS      = ["pop", "jazz", "rock", "blues", "electronic", "disco", "ambient", "dance"]  # Multiple genres
-LIMIT     = 10 # Limit per genre, adjust as needed
+TAGS      = ["pop", "jazz", "rock", "blues", "electronic", "disco", "ambient", "dance", "waltz", "loop"]  # Multiple genres
+LIMIT     = 100 # Limit per genre, adjust as needed
 OUT_DIR   = "jamendo_data"
 CSV_FILE  = os.path.join(OUT_DIR, "jamendo_tracks.csv")
 # ──────────────────────────────────────────────────────────────
@@ -42,6 +42,8 @@ def main():
         "stats_dislikes","stats_avgnote","stats_notes"
     ]
 
+    seen_ids = set()  # Track unique track IDs
+
     with open(CSV_FILE, "w", newline="", encoding="utf-8") as cf:
         writer = csv.DictWriter(cf, fieldnames=fieldnames)
         writer.writeheader()
@@ -54,11 +56,17 @@ def main():
                 continue
 
             for t in tracks:
+                track_id = t.get("id", "")
+                if track_id in seen_ids:
+                    continue  # Skip duplicate
+
+                seen_ids.add(track_id)
+
                 genres = ",".join(t.get("musicinfo", {}).get("tags", {}).get("genres", []))
                 stats = t.get("stats", {})
 
                 row = {
-                    "id":                         t.get("id",""),
+                    "id":                         track_id,
                     "name":                       t.get("name",""),
                     "artist_name":                t.get("artist_name",""),
                     "duration":                   t.get("duration",""),
@@ -86,6 +94,7 @@ def main():
                 writer.writerow(row)
 
     print(f"\n✅ CSV saved to {CSV_FILE}")
+
 
 if __name__ == "__main__":
     main()
