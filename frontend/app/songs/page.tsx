@@ -11,8 +11,8 @@ import {
   getPaginationRowModel,
 } from '@tanstack/react-table';
 import axios from 'axios';
-// @ts-ignore
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../../lib/AuthContext';
 
 // Define the type for our song data
 type Song = {
