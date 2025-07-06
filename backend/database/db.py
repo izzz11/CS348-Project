@@ -30,6 +30,41 @@ def run(sql: str, params: dict = None, fetch=False, fetchone=False):
         return None
 
 
+def run_transaction(operations: list) -> bool:
+    """
+    Execute multiple SQL operations in a single transaction.
+    
+    Args:
+        operations: List of tuples (sql, params, fetch, fetchone)
+                   where sql is the SQL string, params is the parameters dict,
+                   fetch and fetchone are boolean flags for result handling
+    
+    Returns:
+        bool: True if all operations succeed, False if any fail (transaction rolled back)
+    """
+    try:
+        with engine.begin() as conn:
+            results = []
+            for sql, params, fetch, fetchone in operations:
+                result = conn.execute(text(sql), params or {})
+                
+                if fetchone:
+                    row = result.fetchone()
+                    if row is None:
+                        results.append(None)
+                    else:
+                        results.append(dict(zip(result.keys(), row)))
+                elif fetch:
+                    rows = result.fetchall()
+                    results.append([dict(zip(result.keys(), r)) for r in rows])
+                else:
+                    results.append(None)
+            
+            return True
+    except Exception as e:
+        print(f"Transaction error: {e}")
+        return False
+
 
 def run_script(file_path: str):
     with open(file_path, "r") as f:

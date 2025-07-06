@@ -8,6 +8,7 @@ from database.utils.user_actions_repo import (
     delete_user_track_action,
     increment_play_count,
     toggle_favourite,
+    toggle_favourite_with_playlist,
     is_song_favourite
 )
 
@@ -62,10 +63,10 @@ async def record_play(uid: str, sid: str):
         raise HTTPException(status_code=400, detail="Failed to record play")
     return {"message": "Play recorded successfully"}
 
-@router.post("/{uid}/{sid}/favourite")
+@router.post("/{uid}/{sid}/toggle-favourite")
 async def toggle_favourite_action(uid: str, sid: str):
-    """Toggle favourite status for a user's track action"""
-    success = toggle_favourite(uid, sid)
+    """Toggle favourite status for a user's track action with playlist management"""
+    success = toggle_favourite_with_playlist(uid, sid)
     if not success:
         raise HTTPException(status_code=400, detail="Failed to toggle favourite")
     return {"message": "Favourite status toggled successfully"}
