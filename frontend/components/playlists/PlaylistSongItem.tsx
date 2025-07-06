@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Play, MoreHorizontal } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
+import { Play, MoreHorizontal, Trash2 } from 'lucide-react';
 
 interface Song {
   sid: string;
@@ -18,17 +18,47 @@ interface Song {
 interface PlaylistSongItemProps {
   song: Song;
   index: number;
+  pid: string;
+  onSongRemoved?: (sid: string) => void;
 }
 
-const PlaylistSongItem: React.FC<PlaylistSongItemProps> = ({ song, index }) => {
+const PlaylistSongItem: React.FC<PlaylistSongItemProps> = ({ song, index, pid, onSongRemoved }) => {
   // No need to fetch song details, song is provided as prop
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const [isRemoving, setIsRemoving] = useState(false);
 
   const formatDuration = (duration: number) => {
     const minutes = Math.floor(duration / 60);
     const seconds = Math.floor(duration % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const handleRemoveSong = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isRemoving) return;
+    
+    setIsRemoving(true);
+    try {
+      const response = await fetch(`/api/playlist-songs/remove?pid=${pid}&sid=${song.sid}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to remove song from playlist');
+      }
+
+      // Call the callback to update the parent component
+      onSongRemoved?.(song.sid);
+    } catch (err) {
+      console.error('Error removing song:', err);
+      setError('Failed to remove song from playlist');
+    } finally {
+      setIsRemoving(false);
+    }
   };
 
   if (error || !song) {
@@ -73,7 +103,15 @@ const PlaylistSongItem: React.FC<PlaylistSongItemProps> = ({ song, index }) => {
       <div className="col-span-1 text-center text-gray-500">
         {formatDuration(song.duration)}
       </div>
-      <div className="col-span-1 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="col-span-1 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity gap-1">
+        <button 
+          onClick={handleRemoveSong}
+          disabled={isRemoving}
+          className="p-1.5 hover:bg-red-50 rounded-full transition-colors text-gray-400 hover:text-red-500 disabled:opacity-50"
+          title="Remove from playlist"
+        >
+          <Trash2 size={16} />
+        </button>
         <button className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600">
           <MoreHorizontal size={16} />
         </button>

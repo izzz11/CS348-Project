@@ -1,7 +1,7 @@
 from typing import List, Optional
 from datetime import datetime
 from database.schema.models import UserTrackActionCreate, UserTrackActionUpdate, UserTrackActionRead
-from database.db import run
+from database.db import run, run_transaction
 
 def create_user_track_action(action: UserTrackActionCreate) -> bool:
     """
@@ -306,4 +306,122 @@ def is_song_favourite(uid: str, sid: str) -> bool:
         
     except Exception as e:
         print(f"Database error: {e}")
+        return False
+
+def toggle_favourite_with_playlist(uid: str, sid: str) -> bool:
+    """
+    Toggle favourite status for a user's track action and manage playlist songs in a transaction.
+    
+    This function:
+    1. Toggles the song's favourite status in user_track_actions
+    2. If favouriting: adds the song to the user's favourite playlist (where is_favourite = true)
+    3. If unfavouriting: removes the song from the user's favourite playlist
+    4. All operations happen in a single transaction for consistency
+    
+    Returns True if successful, False otherwise
+    """
+    try:
+        # First, get the current favourite status and favourite playlist
+        check_operations = [
+            # Check if user track action exists and get current favourite status
+            ("""
+            SELECT favourite FROM user_track_actions 
+            WHERE uid = :uid AND sid = :sid
+            """, {"uid": uid, "sid": sid}, False, True),
+            
+            # Get the user's favourite playlist (where is_favourite = true)
+            ("""
+            SELECT pid FROM user_playlists 
+            WHERE uid = :uid AND is_favourite = TRUE
+            """, {"uid": uid}, False, True)
+        ]
+        
+        # Execute the check operations
+        check_results = []
+        for sql, params, fetch, fetchone in check_operations:
+            result = run(sql, params, fetch, fetchone)
+            check_results.append(result)
+        
+        current_action = check_results[0]
+        favourite_playlist = check_results[1]
+        
+        if not favourite_playlist:
+            print(f"User {uid} does not have a favourite playlist")
+            return False
+        
+        pid = favourite_playlist["pid"]
+        
+        # Determine new favourite status
+        if current_action:
+            new_favourite = not current_action["favourite"]
+        else:
+            new_favourite = True  # Create new action with favourite = True
+        
+        # Prepare transaction operations
+        operations = []
+        
+        if current_action:
+            # Update existing user track action
+            operations.append((
+                """
+                UPDATE user_track_actions 
+                SET favourite = :favourite
+                WHERE uid = :uid AND sid = :sid
+                """,
+                {"uid": uid, "sid": sid, "favourite": new_favourite},
+                False, False
+            ))
+        else:
+            # Create new user track action
+            operations.append((
+                """
+                INSERT INTO user_track_actions (uid, sid, last_listened, total_plays, favourite, rating)
+                VALUES (:uid, :sid, :last_listened, :total_plays, :favourite, :rating)
+                """,
+                {
+                    "uid": uid,
+                    "sid": sid,
+                    "last_listened": datetime.now().isoformat(),
+                    "total_plays": 0,
+                    "favourite": new_favourite,
+                    "rating": None
+                },
+                False, False
+            ))
+        
+        # Handle playlist_songs based on favourite status
+        if new_favourite:
+            # Add song to favourite playlist (check if not already there)
+            operations.append((
+                """
+                INSERT IGNORE INTO playlist_songs (pid, sid)
+                VALUES (:pid, :sid)
+                """,
+                {"pid": pid, "sid": sid},
+                False, False
+            ))
+        else:
+            # Remove song from favourite playlist
+            operations.append((
+                """
+                DELETE FROM playlist_songs 
+                WHERE pid = :pid AND sid = :sid
+                """,
+                {"pid": pid, "sid": sid},
+                False, False
+            ))
+        
+        # Execute all operations in a single transaction
+        success = run_transaction(operations)
+        
+        if success:
+            action = "favourited" if new_favourite else "unfavourited"
+            print(f"Successfully {action} song {sid} for user {uid}")
+            return True
+        else:
+            print(f"Failed to toggle favourite status for user {uid} and song {sid}")
+            return False
+            
+    except Exception as e:
+        print(f"Database error in toggle_favourite_with_playlist: {e}")
         return False

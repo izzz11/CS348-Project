@@ -8,11 +8,11 @@ import {
   getSortedRowModel,
   flexRender,
   createColumnHelper,
+  getPaginationRowModel,
 } from '@tanstack/react-table';
 import axios from 'axios';
 // @ts-ignore
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { useAuth } from '@/lib/AuthContext';
 
 // Define the type for our song data
 type Song = {
@@ -131,6 +131,12 @@ export default function Songs() {
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: 20,
+      },
+    },
   });
 
   return (
@@ -222,7 +228,7 @@ export default function Songs() {
                 {table.getRowModel().rows.map(row => (
                   <tr
                     key={row.id}
-                    onClick={() => handleClickSong(row.original.sid)}
+                    onClick={() => router.push(`/play-song/${row.original.sid}`)}
                     className="border-b border-gray-50 hover:bg-indigo-50 transition-colors cursor-pointer group"
                   >
                     {row.getVisibleCells().map(cell => (

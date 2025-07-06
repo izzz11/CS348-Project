@@ -6,8 +6,8 @@ import csv
 # ──────────────────────────────────────────────────────────────
 # CONFIGURATION
 CLIENT_ID = "c538f291"
-TAGS      = ["pop", "jazz", "rock", "blues", "electronic", "disco", "ambient", "dance"]  # Multiple genres
-LIMIT     = 10 # Limit per genre, adjust as needed
+TAGS      = ["pop", "jazz", "rock", "blues", "electronic", "disco", "ambient", "dance", "waltz", "loop"]
+LIMIT     = 200
 OUT_DIR   = "jamendo_data"
 CSV_FILE  = os.path.join(OUT_DIR, "jamendo_tracks.csv")
 # ──────────────────────────────────────────────────────────────
@@ -42,6 +42,8 @@ def main():
         "stats_dislikes","stats_avgnote","stats_notes"
     ]
 
+    seen_ids = set()  # Track unique track IDs
+
     with open(CSV_FILE, "w", newline="", encoding="utf-8") as cf:
         writer = csv.DictWriter(cf, fieldnames=fieldnames)
         writer.writeheader()
@@ -54,16 +56,30 @@ def main():
                 continue
 
             for t in tracks:
+                track_id = t.get("id", "")
+                name = t.get("name", "")
+                audiodownload = t.get("audiodownload")
+
+                # Filter out duplicates, missing audiodownload, or name too long
+                if (
+                    track_id in seen_ids or
+                    not audiodownload or
+                    len(name) > 100
+                ):
+                    continue
+
+                seen_ids.add(track_id)
+
                 genres = ",".join(t.get("musicinfo", {}).get("tags", {}).get("genres", []))
                 stats = t.get("stats", {})
 
                 row = {
-                    "id":                         t.get("id",""),
-                    "name":                       t.get("name",""),
+                    "id":                         track_id,
+                    "name":                       name,
                     "artist_name":                t.get("artist_name",""),
                     "duration":                   t.get("duration",""),
                     "audio":                      t.get("audio",""),
-                    "audiodownload":              t.get("audiodownload",""),
+                    "audiodownload":              audiodownload,
                     "file_path":                  "",  # No download
                     "genres":                     genres,
                     "shareurl":                   t.get("shareurl",""),

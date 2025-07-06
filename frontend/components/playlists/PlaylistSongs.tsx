@@ -23,6 +23,16 @@ interface PlaylistSongsProps {
 }
 
 const PlaylistSongs: React.FC<PlaylistSongsProps> = ({ pid, playlistName, description, songs }) => {
+  const [currentSongs, setCurrentSongs] = useState<Song[]>(songs || []);
+
+  // Update songs when the prop changes
+  useEffect(() => {
+    setCurrentSongs(songs || []);
+  }, [songs]);
+
+  const handleSongRemoved = (removedSid: string) => {
+    setCurrentSongs(prevSongs => prevSongs.filter(song => song.sid !== removedSid));
+  };
 
   return (
     <div className="space-y-6">
@@ -37,7 +47,7 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = ({ pid, playlistName, descri
           <div className="flex items-center gap-4 text-gray-500">
             <div className="flex items-center gap-2">
               <Music size={18} />
-              <span>{songs?.length} songs</span>
+              <span>{currentSongs?.length} songs</span>
             </div>
           </div>
         </div>
@@ -45,7 +55,7 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = ({ pid, playlistName, descri
 
       {/* Songs List */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        {songs?.length === 0 ? (
+        {currentSongs?.length === 0 ? (
           <div className="text-center py-16">
             <Music className="h-16 w-16 mx-auto mb-4 text-gray-400 opacity-80" />
             <h3 className="text-xl font-semibold mb-2 text-gray-800">No Songs Yet</h3>
@@ -64,11 +74,13 @@ const PlaylistSongs: React.FC<PlaylistSongsProps> = ({ pid, playlistName, descri
             </div>
 
             {/* Songs */}
-            {songs?.map((song, index) => (
+            {currentSongs?.map((song, index) => (
               <PlaylistSongItem 
                 key={song.sid}
                 song={song}
                 index={index}
+                pid={pid}
+                onSongRemoved={handleSongRemoved}
               />
             ))}
           </div>
