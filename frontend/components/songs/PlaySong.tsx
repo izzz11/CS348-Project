@@ -608,7 +608,7 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId, userId }) => {
                                   showToast("Added to playlist", "success");
                                 }
                                 else {
-                                  showToast("Could not add to playlist", "error");
+                                  showToast("Already added to playlist", "error");
                                 }
                               }}
                               className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors duration-150
