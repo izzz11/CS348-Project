@@ -1,7 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   useReactTable,
@@ -13,6 +12,7 @@ import {
 import axios from 'axios';
 // @ts-ignore
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '@/lib/AuthContext';
 
 // Define the type for our song data
 type Song = {
@@ -67,6 +67,7 @@ export default function Songs() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const router = useRouter();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchSongs = async () => {
@@ -106,6 +107,23 @@ export default function Songs() {
 
   const handleClear = () => {
     setSearch('');
+  };
+
+  const handleClickSong = async (sid: number) => {
+    // If user is logged in, track the song action
+    if (user?.uid) {
+      console.log('Tracking song action for user:', user.uid, 'and song:', sid);
+      try {
+        await fetch(`/api/song/track-action?uid=${user.uid}&sid=${sid}&increment=false`, {
+          method: 'POST',
+        });
+      } catch (error) {
+        console.error('Error tracking song action:', error);
+      }
+    }
+    
+    // Navigate to the song page
+    router.push(`/play-song/${sid}`);
   };
 
   const table = useReactTable({
@@ -204,7 +222,7 @@ export default function Songs() {
                 {table.getRowModel().rows.map(row => (
                   <tr
                     key={row.id}
-                    onClick={() => router.push(`/play-song/${row.original.sid}`)}
+                    onClick={() => handleClickSong(row.original.sid)}
                     className="border-b border-gray-50 hover:bg-indigo-50 transition-colors cursor-pointer group"
                   >
                     {row.getVisibleCells().map(cell => (

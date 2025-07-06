@@ -1,8 +1,6 @@
 -- CREATE TABLES IF THEY DO NOT EXIST
 -- Target: MySQL database for a music streaming application
 
-
-
 CREATE TABLE IF NOT EXISTS users (
     uid VARCHAR(36) PRIMARY KEY,
     username VARCHAR(50),

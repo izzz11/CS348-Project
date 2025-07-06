@@ -16,6 +16,16 @@ router = APIRouter(
     tags=["user-actions"]
 )
 
+
+@router.get("/{uid}/favourites")
+async def get_user_favourites(uid: str):
+    """Get all favourite songs for a user"""
+    print('herrrrrrrrrrrre')
+    actions = get_user_track_actions(uid)
+    print('actionssss', actions)
+    favourites = [action for action in actions if action.favourite]
+    return {"favourites": favourites}
+
 @router.post("/create")
 async def create_action(action: UserTrackActionCreate):
     """Create a new user track action"""
@@ -70,12 +80,6 @@ async def toggle_favourite_action(uid: str, sid: str):
         raise HTTPException(status_code=400, detail="Failed to toggle favourite")
     return {"message": "Favourite status toggled successfully"}
 
-@router.get("/{uid}/favourites")
-async def get_user_favourites(uid: str):
-    """Get all favourite songs for a user"""
-    actions = get_user_track_actions(uid)
-    favourites = [action for action in actions if action.favourite]
-    return {"favourites": favourites}
 
 @router.get("/{uid}/recent")
 async def get_recent_plays(uid: str, limit: int = 10):

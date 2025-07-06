@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Play, MoreHorizontal } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
 
 interface Song {
   sid: string;
@@ -22,6 +23,7 @@ interface PlaylistSongItemProps {
 const PlaylistSongItem: React.FC<PlaylistSongItemProps> = ({ song, index }) => {
   // No need to fetch song details, song is provided as prop
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const formatDuration = (duration: number) => {
     const minutes = Math.floor(duration / 60);
@@ -46,6 +48,18 @@ const PlaylistSongItem: React.FC<PlaylistSongItemProps> = ({ song, index }) => {
         <Link 
           href={`/play-song/${song.sid}`}
           className="font-medium text-gray-900 hover:text-[#6C5CE7] transition-colors line-clamp-1"
+          onClick={async (e) => {
+            // If user is logged in, track the song action
+            if (user?.uid) {
+              try {
+                await fetch(`/api/song/track-action?uid=${user.uid}&sid=${song.sid}&increment=false`, {
+                  method: 'POST',
+                });
+              } catch (error) {
+                console.error('Error tracking song action:', error);
+              }
+            }
+          }}
         >
           {song.name}
         </Link>
