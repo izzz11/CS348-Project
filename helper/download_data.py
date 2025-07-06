@@ -6,8 +6,8 @@ import csv
 # ──────────────────────────────────────────────────────────────
 # CONFIGURATION
 CLIENT_ID = "c538f291"
-TAGS      = ["pop", "jazz", "rock", "blues", "electronic", "disco", "ambient", "dance", "waltz", "loop"]  # Multiple genres
-LIMIT     = 100 # Limit per genre, adjust as needed
+TAGS      = ["pop", "jazz", "rock", "blues", "electronic", "disco", "ambient", "dance", "waltz", "loop"]
+LIMIT     = 200
 OUT_DIR   = "jamendo_data"
 CSV_FILE  = os.path.join(OUT_DIR, "jamendo_tracks.csv")
 # ──────────────────────────────────────────────────────────────
@@ -57,8 +57,16 @@ def main():
 
             for t in tracks:
                 track_id = t.get("id", "")
-                if track_id in seen_ids:
-                    continue  # Skip duplicate
+                name = t.get("name", "")
+                audiodownload = t.get("audiodownload")
+
+                # Filter out duplicates, missing audiodownload, or name too long
+                if (
+                    track_id in seen_ids or
+                    not audiodownload or
+                    len(name) > 100
+                ):
+                    continue
 
                 seen_ids.add(track_id)
 
@@ -67,11 +75,11 @@ def main():
 
                 row = {
                     "id":                         track_id,
-                    "name":                       t.get("name",""),
+                    "name":                       name,
                     "artist_name":                t.get("artist_name",""),
                     "duration":                   t.get("duration",""),
                     "audio":                      t.get("audio",""),
-                    "audiodownload":              t.get("audiodownload",""),
+                    "audiodownload":              audiodownload,
                     "file_path":                  "",  # No download
                     "genres":                     genres,
                     "shareurl":                   t.get("shareurl",""),
@@ -94,7 +102,6 @@ def main():
                 writer.writerow(row)
 
     print(f"\n✅ CSV saved to {CSV_FILE}")
-
 
 if __name__ == "__main__":
     main()
