@@ -73,10 +73,14 @@ To launch the full-stack TuneMatch app locally, follow these steps:
    ```
    docker exec -it musicdb mysql -u musicuser -pmusicpass musicdb
    ```
+   If you have set up this database before and want to reset for new database, you can run the following command before you run anything of the set up commands.
+   ```
+   docker-compose down -v
+   ```
 
    > Make sure to delete app.db if you want a fresh database
 
-5. Start the FastAPI server:
+6. Start the FastAPI server:
    ```bash
    uvicorn main:app --reload
    ```
