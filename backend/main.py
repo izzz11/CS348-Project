@@ -1,7 +1,7 @@
 # main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api import users, playlists, songs, playlist_songs, user_actions, global_dashboard
+from api import users, playlists, songs, playlist_songs, user_actions, matching, global_dashboard
 from database.scripts.insert_songs_from_csv import populate_songs_if_empty
 
 # Run DB seeding logic
@@ -22,6 +22,7 @@ app.include_router(playlists.router)
 app.include_router(songs.router)
 app.include_router(playlist_songs.router)
 app.include_router(user_actions.router)
+app.include_router(matching.router)
 app.include_router(global_dashboard.router)
 
 @app.get("/test")
