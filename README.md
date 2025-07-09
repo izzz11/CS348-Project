@@ -14,10 +14,10 @@ We’re building **TuneMatch**, a simple app that connects people based on their
 
 ### 🔧 Database Setup and Data Loading
 
-The system currently supports three core tables: `Songs`, `Users`, and `Playlists`.
+The system currently supports several core tables: `Songs`, `Users`, `Playlists`, and additional supporting tables for user interaction and playlist management.
 
 #### 1. **Songs Table**
-- **Source**: Songs are fetched online via the Spotify API or scraped datasets.
+- **Source**: Songs’ metadata is fetched online via the Jamendo API.
 - **Stored Fields**:
   - `sid`, `name`, `genre`, `artist`, `duration`, `audio_path`, `audio_download_path`
 - **Sample Data**: Initially, we preload **100 songs** as a test dataset in **Milestone 1**.
@@ -30,14 +30,44 @@ The system currently supports three core tables: `Songs`, `Users`, and `Playlist
 #### 2. **Users Table**
 - **Created dynamically** when a user **registers** or **logs in** via the frontend.
 - **Stored Fields**:
-  - `uid`, `username`, `password`
-- The `users` table is continuously updated as new users join or update credentials.
+  - `uid`, `username`, `name`, `age`, `password`, `email`, `country`
+- The `users` table is continuously updated as new users join or update their credentials.
 
 #### 3. **Playlists Table**
 - **Created by users** via the interface when they decide to build custom playlists.
 - **Stored Fields**:
-  - `uid`, `pid`, `name`, `description`, `private`, `shared_with`
+  - `pid`, `uid`, `name`, `description`, `private`, `shared_with`, `times_listened`, `liked`
 - Users select from the current pool of 100 songs to populate their playlists.
+
+#### 4. **Playlist_Songs Table**
+- **Purpose**: Tracks which songs are added to which playlists.
+- **Stored Fields**:
+  - `pid`, `sid`, `added_at`
+- This allows users to view or update songs in each playlist while preserving song order and metadata.
+
+#### 5. **User_Track_Actions Table**
+- **Purpose**: Records a user’s interaction with individual songs.
+- **Stored Fields**:
+  - `uid`, `sid`, `last_listened`, `total_plays`, `favourite`, `rating`
+- Enables tracking engagement for personalized recommendations or analytics.
+
+#### 6. **User_Playlists Table**
+- **Purpose**: Supports the many-to-many relationship between users and playlists.
+- **Stored Fields**:
+  - `uid`, `pid`, `shared_at`, `is_favourite`
+- Reflects both ownership and sharing of playlists among users, along with marking favorites.
+
+#### 7. **Matches / Friends Table** *(TBD - Optional, Advanced Feature)*
+- **Stored Fields**:
+  - `uid1`, `uid2`, `tastes`
+- **Purpose**:
+  - Potentially models social or recommendation features.
+  - `tastes` is expected to be an **embedded vector** in a semantic space, possibly reflecting:
+    - `favourite`, `rating`, `shared_with`, `country`, `genre`
+- **Matching Logic**:
+  - Based on **cosine similarity** between user embeddings.
+  - Full implementation pending further design decisions.
+
 
 ---
 
