@@ -50,6 +50,9 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId, userId }) => {
   const [allSongs, setAllSongs] = useState<SongData[]>([]);
   const [currentSongIndex, setCurrentSongIndex] = useState(-1);
   
+  // Track if the song has been played in this session
+  const [hasBeenPlayed, setHasBeenPlayed] = useState(false);
+  
   // Audio stuff
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [audioLoaded, setAudioLoaded] = useState(false);
@@ -79,12 +82,26 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId, userId }) => {
 
   // Fetch song data on component mount
   useEffect(() => {
+    // Reset the played state when song changes
+    setHasBeenPlayed(false);
+    
     const fetchSongData = async () => {
       try {
         const res = await fetch(`/api/song/play-song?songId=${songId}`);
         if (!res.ok) throw new Error('Failed to fetch song');
         const data = await res.json();
         setSongData(data);
+        
+        // Track user action for the song if user is logged in
+        if (userId) {
+          try {
+            await fetch(`/api/song/track-action?uid=${userId}&sid=${songId}&increment=false`, {
+              method: 'POST',
+            });
+          } catch (trackError) {
+            console.error('Error tracking song action:', trackError);
+          }
+        }
         
         // Pre-load audio element when song data is available
         if (data && data.audio_path) {
@@ -281,6 +298,18 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId, userId }) => {
       try {
         await audioRef.current.play();
         setIsPlaying(true);
+        
+        // Increment play count when the song actually starts playing
+        if (userId && songId && !hasBeenPlayed) {
+          try {
+            await fetch(`/api/song/track-action?uid=${userId}&sid=${songId}&increment=true`, {
+              method: 'POST',
+            });
+            setHasBeenPlayed(true); // Mark song as played
+          } catch (trackError) {
+            console.error('Error tracking song play:', trackError);
+          }
+        }
       } catch (playError) {
         console.error('Error playing audio:', playError);
         setError('Failed to play song. The audio file may be missing or corrupted.');

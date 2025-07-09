@@ -2,29 +2,26 @@
 import requests
 import os
 import csv
-import json
 
 # ──────────────────────────────────────────────────────────────
 # CONFIGURATION
-CLIENT_ID = "c538f291" 
-TAG       = "ambient"
-LIMIT     = 10              # Number of tracks to fetch (max 200)
+CLIENT_ID = "c538f291"
+TAGS      = ["pop", "jazz", "rock", "blues", "electronic", "disco", "ambient", "dance", "waltz", "loop"]
+LIMIT     = 200
 OUT_DIR   = "jamendo_data"
 CSV_FILE  = os.path.join(OUT_DIR, "jamendo_tracks.csv")
 # ──────────────────────────────────────────────────────────────
 
 API_URL = "https://api.jamendo.com/v3.0/tracks"
-
-# Ensure output directory exists
 os.makedirs(OUT_DIR, exist_ok=True)
 
-def fetch_tracks():
-    """Fetch track metadata, including musicinfo.tags, stats, and download URLs."""
+def fetch_tracks(tag):
+    """Fetch track metadata for a given genre tag."""
     params = {
         "client_id":     CLIENT_ID,
         "format":        "json",
         "limit":         LIMIT,
-        "tags":          TAG,
+        "tags":          tag,
         "audioformat":   "mp31",
         "audiodlformat": "mp31",
         "include":       "musicinfo+licenses+stats"
@@ -33,26 +30,7 @@ def fetch_tracks():
     resp.raise_for_status()
     return resp.json().get("results", [])
 
-def download_mp3(url, path):
-    """Stream-download an MP3 if allowed by the API."""
-    try:
-        with requests.get(url, stream=True) as r:
-            r.raise_for_status()
-            with open(path, "wb") as f:
-                for chunk in r.iter_content(8192):
-                    f.write(chunk)
-        return True
-    except Exception as e:
-        print(f"Error downloading {url}: {e}")
-        return False
-
 def main():
-    tracks = fetch_tracks()
-    if not tracks:
-        print("⚠️ No tracks returned. Check CLIENT_ID and TAG.")
-        return
-
-    # ─── Define CSV Columns ─────────────────────────────────────
     fieldnames = [
         "id","name","artist_name","duration",
         "audio","audiodownload","file_path",
@@ -64,58 +42,66 @@ def main():
         "stats_dislikes","stats_avgnote","stats_notes"
     ]
 
-    # ─── Write CSV ─────────────────────────────────────────────
+    seen_ids = set()  # Track unique track IDs
+
     with open(CSV_FILE, "w", newline="", encoding="utf-8") as cf:
         writer = csv.DictWriter(cf, fieldnames=fieldnames)
         writer.writeheader()
 
-        for idx, t in enumerate(tracks, start=1):
-            # Extract genres from musicinfo.tags
-            genres = ",".join(t.get("musicinfo", {}).get("tags", {}).get("genres", []))
+        for tag in TAGS:
+            print(f"🎵 Fetching genre: {tag}")
+            tracks = fetch_tracks(tag)
+            if not tracks:
+                print(f"⚠️  No tracks found for tag: {tag}")
+                continue
 
-            stats = t.get("stats", {})
+            for t in tracks:
+                track_id = t.get("id", "")
+                name = t.get("name", "")
+                audiodownload = t.get("audiodownload")
 
-            row = {
-                "id":                         t.get("id",""),
-                "name":                       t.get("name",""),
-                "artist_name":                t.get("artist_name",""),
-                "duration":                   t.get("duration",""),
-                "audio":                      t.get("audio",""),
-                "audiodownload":              t.get("audiodownload",""),
-                "file_path":                  "",
+                # Filter out duplicates, missing audiodownload, or name too long
+                if (
+                    track_id in seen_ids or
+                    not audiodownload or
+                    len(name) > 100
+                ):
+                    continue
 
-                "genres":                     genres,
-                "shareurl":                   t.get("shareurl",""),
-                "album_id":                   t.get("album_id",""),
-                "album_name":                 t.get("album_name",""),
-                "album_image":                t.get("album_image",""),
-                "artist_id":                  t.get("artist_id",""),
-                "position":                   t.get("position",""),
-                "license_ccurl":              t.get("license_ccurl",""),
+                seen_ids.add(track_id)
 
-                "stats_rate_downloads_total": stats.get("rate_downloads_total",""),
-                "stats_rate_listened_total":  stats.get("rate_listened_total",""),
-                "stats_playlisted":           stats.get("playlisted",""),
-                "stats_favorited":            stats.get("favorited",""),
-                "stats_likes":                stats.get("likes",""),
-                "stats_dislikes":             stats.get("dislikes",""),
-                "stats_avgnote":              stats.get("avgnote",""),
-                "stats_notes":                stats.get("notes",""),
-            }
+                genres = ",".join(t.get("musicinfo", {}).get("tags", {}).get("genres", []))
+                stats = t.get("stats", {})
 
-            # Download MP3 if allowed
-            if t.get("audiodownload_allowed", False):
-                safe_title  = row["name"].replace(" ", "_").replace("/", "_")
-                safe_artist = row["artist_name"].replace(" ", "_").replace("/", "_")
-                filename    = f"{idx:03d}_{safe_artist}-{safe_title}.mp3"
-                path        = os.path.join(OUT_DIR, filename)
-                if download_mp3(row["audiodownload"], path):
-                    row["file_path"] = path
+                row = {
+                    "id":                         track_id,
+                    "name":                       name,
+                    "artist_name":                t.get("artist_name",""),
+                    "duration":                   t.get("duration",""),
+                    "audio":                      t.get("audio",""),
+                    "audiodownload":              audiodownload,
+                    "file_path":                  "",  # No download
+                    "genres":                     genres,
+                    "shareurl":                   t.get("shareurl",""),
+                    "album_id":                   t.get("album_id",""),
+                    "album_name":                 t.get("album_name",""),
+                    "album_image":                t.get("album_image",""),
+                    "artist_id":                  t.get("artist_id",""),
+                    "position":                   t.get("position",""),
+                    "license_ccurl":              t.get("license_ccurl",""),
+                    "stats_rate_downloads_total": stats.get("rate_downloads_total",""),
+                    "stats_rate_listened_total":  stats.get("rate_listened_total",""),
+                    "stats_playlisted":           stats.get("playlisted",""),
+                    "stats_favorited":            stats.get("favorited",""),
+                    "stats_likes":                stats.get("likes",""),
+                    "stats_dislikes":             stats.get("dislikes",""),
+                    "stats_avgnote":              stats.get("avgnote",""),
+                    "stats_notes":                stats.get("notes",""),
+                }
 
-            writer.writerow(row)
+                writer.writerow(row)
 
     print(f"\n✅ CSV saved to {CSV_FILE}")
-    print(f"🎧 MP3s (where permitted) are in: {OUT_DIR}/")
 
 if __name__ == "__main__":
     main()

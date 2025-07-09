@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine, text
 from pathlib import Path
 from database import db_config
+from sqlalchemy.orm import sessionmaker
 
 # Build DB URL
 SQLALCHEMY_DATABASE_URL = (
@@ -74,11 +75,40 @@ def run_script(file_path: str):
             if statement.strip():
                 conn.execute(text(statement.strip()))
 
+def create_views_and_indexes():
+    ddl = """
+    CREATE OR REPLACE VIEW song_play_counts AS
+    SELECT
+    uta.sid,
+    s.name       AS song_name,
+    s.artist     AS artist,
+    COALESCE(SUM(uta.total_plays), 0) AS total_plays
+    FROM user_track_actions AS uta
+    JOIN songs AS s ON s.sid = uta.sid
+    GROUP BY uta.sid, s.name, s.artist;
+    """
+    # use begin() guarantee auto-submission
+    with engine.begin() as conn:
+        conn.execute(text(ddl))
+
+# Run schema on startup
+run_script(SCHEMA_PATH)
+create_views_and_indexes()
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def get_db():
+    """
+    Dependency to get ORM session for FastAPI endpoints.
+    """
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 
 def get_db_conn():
     with engine.connect() as conn:
         yield conn
 
-
-# Run schema on startup
-run_script(SCHEMA_PATH)

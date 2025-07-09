@@ -135,11 +135,7 @@ export default function Playlists() {
             >
               <FaPlus /> Create Playlist
             </button>
-            <Link href="/">
-              <button className="bg-white text-gray-700 hover:bg-gray-50 px-6 py-2.5 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg">
-                Back to Home
-              </button>
-            </Link>
+            
           </div>
         </div>
 

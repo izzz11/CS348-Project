@@ -6,6 +6,10 @@ import { getUserInfo, logout, notifyAuthChange } from './auth';
 type User = {
   uid: string;
   username: string;
+  name: string;
+  age: string;
+  email: string;
+  country: string;
 } | null;
 
 type AuthContextType = {

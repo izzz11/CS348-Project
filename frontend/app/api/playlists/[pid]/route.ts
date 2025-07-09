@@ -5,11 +5,10 @@ export async function GET(
   { params }: { params: { pid: string } }
 ) {
   const pid = params.pid;
-
   if (!pid) {
     return NextResponse.json({ error: 'Missing playlist ID' }, { status: 400 });
   }
-
+  console.log("pid", pid);
   try {
     // Fetch playlist details
     const playlistRes = await fetch(`http://localhost:8000/playlists/${pid}`);

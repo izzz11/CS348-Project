@@ -50,7 +50,7 @@ def create_user_track_action(action: UserTrackActionCreate) -> bool:
         insert_params = {
             "uid": action.uid,
             "sid": action.sid,
-            "last_listened": action.last_listened or datetime.now().isoformat(),
+            "last_listened": action.last_listened or datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             "total_plays": action.total_plays or 0,
             "favourite": action.favourite or False,
             "rating": action.rating
@@ -134,6 +134,9 @@ def get_user_track_action(uid: str, sid: str) -> Optional[UserTrackActionRead]:
         row = run(sql, params, fetchone=True)
         
         if row:
+            # Convert datetime to string if it exists
+            if row.get('last_listened') and isinstance(row['last_listened'], datetime):
+                row['last_listened'] = row['last_listened'].strftime('%Y-%m-%d %H:%M:%S')
             return UserTrackActionRead(**row)
         return None
         
@@ -151,10 +154,15 @@ def get_user_track_actions(uid: str) -> List[UserTrackActionRead]:
         SELECT uid, sid, last_listened, total_plays, favourite, rating
         FROM user_track_actions 
         WHERE uid = :uid
+        ORDER BY last_listened DESC
         """
         rows = run(sql, {"uid": uid}, fetch=True)
         
         if rows:
+            # Convert datetime to string for each row
+            for row in rows:
+                if row.get('last_listened') and isinstance(row['last_listened'], datetime):
+                    row['last_listened'] = row['last_listened'].strftime('%Y-%m-%d %H:%M:%S')
             return [UserTrackActionRead(**row) for row in rows]
         return []
         
@@ -212,7 +220,7 @@ def increment_play_count(uid: str, sid: str) -> bool:
                 uid=uid,
                 sid=sid,
                 total_plays=1,
-                last_listened=datetime.now().isoformat()
+                last_listened=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             )
             return create_user_track_action(action)
         
@@ -225,7 +233,7 @@ def increment_play_count(uid: str, sid: str) -> bool:
         update_params = {
             "uid": uid,
             "sid": sid,
-            "last_listened": datetime.now().isoformat()
+            "last_listened": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
         run(update_sql, update_params)
         print(f"Successfully incremented play count for user {uid} and song {sid}")
@@ -254,7 +262,8 @@ def toggle_favourite(uid: str, sid: str) -> bool:
             action = UserTrackActionCreate(
                 uid=uid,
                 sid=sid,
-                favourite=True
+                favourite=True,
+                last_listened=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             )
             return create_user_track_action(action)
         

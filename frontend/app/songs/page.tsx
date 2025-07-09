@@ -1,7 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   useReactTable,
@@ -12,8 +11,8 @@ import {
   getPaginationRowModel,
 } from '@tanstack/react-table';
 import axios from 'axios';
-// @ts-ignore
-import { MagnifyingGlassIcon, XMarkIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../../lib/AuthContext';
 
 // Define the type for our song data
 type Song = {
@@ -68,6 +67,7 @@ export default function Songs() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const router = useRouter();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchSongs = async () => {
@@ -109,6 +109,23 @@ export default function Songs() {
     setSearch('');
   };
 
+  const handleClickSong = async (sid: number) => {
+    // If user is logged in, track the song action
+    if (user?.uid) {
+      console.log('Tracking song action for user:', user.uid, 'and song:', sid);
+      try {
+        await fetch(`/api/song/track-action?uid=${user.uid}&sid=${sid}&increment=false`, {
+          method: 'POST',
+        });
+      } catch (error) {
+        console.error('Error tracking song action:', error);
+      }
+    }
+    
+    // Navigate to the song page
+    router.push(`/play-song/${sid}`);
+  };
+
   const table = useReactTable({
     data: filteredSongs,
     columns,
@@ -129,13 +146,9 @@ export default function Songs() {
         <meta name="description" content="Browse and discover songs" />
       </Head>
       <main className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex items-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800">Song Database</h1>
-          <Link href="/">
-            <button className="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-2 rounded-full transition-colors shadow-sm hover:shadow-md">
-              Back to Home
-            </button>
-          </Link>
+          
         </div>
         {/* Search Bar */}
         <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-center gap-3 mb-6">
@@ -182,133 +195,52 @@ export default function Songs() {
             No results found.
           </div>
         ) : (
-          <>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  {table.getHeaderGroups().map(headerGroup => (
-                    <tr key={headerGroup.id} className="border-b border-gray-100">
-                      {headerGroup.headers.map(header => (
-                        <th
-                          key={header.id}
-                          className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-indigo-600 select-none"
-                          onClick={header.column.getToggleSortingHandler?.()}
-                          tabIndex={0}
-                          onKeyDown={e => {
-                            const handler = header.column.getToggleSortingHandler?.();
-                            if (e.key === 'Enter' && handler) handler(e);
-                          }}
-                        >
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                          {{
-                            asc: ' ↑',
-                            desc: ' ↓',
-                          }[header.column.getIsSorted() as string] ?? null}
-                        </th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody>
-                  {table.getRowModel().rows.map(row => (
-                    <tr
-                      key={row.id}
-                      onClick={() => router.push(`/play-song/${row.original.sid}`)}
-                      className="border-b border-gray-50 hover:bg-indigo-50 transition-colors cursor-pointer group"
-                    >
-                      {row.getVisibleCells().map(cell => (
-                        <td key={cell.id} className="px-4 py-3 text-sm text-gray-600 group-hover:text-indigo-700 transition-colors">
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            
-            {/* Pagination Controls */}
-            <div className="flex items-center justify-between mt-6">
-              <div className="text-sm text-gray-500">
-                Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to{' '}
-                {Math.min(
-                  (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
-                  filteredSongs.length
-                )}{' '}
-                of {filteredSongs.length} results
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => table.previousPage()}
-                  disabled={!table.getCanPreviousPage()}
-                  className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <ChevronLeftIcon className="w-4 h-4" />
-                  Previous
-                </button>
-                
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: table.getPageCount() }, (_, i) => {
-                    const pageIndex = i;
-                    const isCurrentPage = pageIndex === table.getState().pagination.pageIndex;
-                    
-                    // Show first page, last page, current page, and pages around current
-                    const shouldShow = 
-                      pageIndex === 0 ||
-                      pageIndex === table.getPageCount() - 1 ||
-                      Math.abs(pageIndex - table.getState().pagination.pageIndex) <= 1;
-                    
-                    if (!shouldShow) {
-                      // Show ellipsis if there's a gap
-                      const prevPage = pageIndex - 1;
-                      const nextPage = pageIndex + 1;
-                      const shouldShowEllipsis = 
-                        prevPage > 0 && 
-                        nextPage < table.getPageCount() - 1 &&
-                        Math.abs(prevPage - table.getState().pagination.pageIndex) > 1 &&
-                        Math.abs(nextPage - table.getState().pagination.pageIndex) > 1;
-                      
-                      if (shouldShowEllipsis && pageIndex === prevPage + 1) {
-                        return (
-                          <span key={`ellipsis-${pageIndex}`} className="px-2 py-2 text-gray-400">
-                            ...
-                          </span>
-                        );
-                      }
-                      return null;
-                    }
-                    
-                    return (
-                      <button
-                        key={pageIndex}
-                        onClick={() => table.setPageIndex(pageIndex)}
-                        className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                          isCurrentPage
-                            ? 'bg-indigo-500 text-white'
-                            : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700'
-                        }`}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                {table.getHeaderGroups().map(headerGroup => (
+                  <tr key={headerGroup.id} className="border-b border-gray-100">
+                    {headerGroup.headers.map(header => (
+                      <th
+                        key={header.id}
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-indigo-600 select-none"
+                        onClick={header.column.getToggleSortingHandler?.()}
+                        tabIndex={0}
+                        onKeyDown={e => {
+                          const handler = header.column.getToggleSortingHandler?.();
+                          if (e.key === 'Enter' && handler) handler(e);
+                        }}
                       >
-                        {pageIndex + 1}
-                      </button>
-                    );
-                  })}
-                </div>
-                
-                <button
-                  onClick={() => table.nextPage()}
-                  disabled={!table.getCanNextPage()}
-                  className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  Next
-                  <ChevronRightIcon className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </>
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                        {{
+                          asc: ' ↑',
+                          desc: ' ↓',
+                        }[header.column.getIsSorted() as string] ?? null}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody>
+                {table.getRowModel().rows.map(row => (
+                  <tr
+                    key={row.id}
+                    onClick={() => router.push(`/play-song/${row.original.sid}`)}
+                    className="border-b border-gray-50 hover:bg-indigo-50 transition-colors cursor-pointer group"
+                  >
+                    {row.getVisibleCells().map(cell => (
+                      <td key={cell.id} className="px-4 py-3 text-sm text-gray-600 group-hover:text-indigo-700 transition-colors">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </main>
     </div>
