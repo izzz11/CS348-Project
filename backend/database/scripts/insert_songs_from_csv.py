@@ -24,27 +24,67 @@ def populate_songs_if_empty():
             # Remove rows with NaN in 'audiodownload'
             df = df[df["audiodownload"].notna()]
 
-            df.columns = ["sid", "name", "genre", "artist", "duration", "audio_path", "audio_download_path"]
+            # Create a mapping of genre names to IDs
+            genre_map = {}
             
-            
-
-            insert_sql = """
-                INSERT INTO songs (sid, name, genre, artist, duration, audio_path, audio_download_path)
-                VALUES (:sid, :name, :genre, :artist, :duration, :audio_path, :audio_download_path)
+            # Insert songs without genre information
+            insert_song_sql = """
+                INSERT INTO songs (sid, name, artist, duration, audio_path, audio_download_path)
+                VALUES (:sid, :name, :artist, :duration, :audio_path, :audio_download_path)
             """
 
-
+            # Process each row
             for _, row in df.iterrows():
-                conn.execute(text(insert_sql), {
-                    "sid": str(row["sid"]),
+                # Insert song
+                conn.execute(text(insert_song_sql), {
+                    "sid": str(row["id"]),
                     "name": row["name"],
-                    "genre": row["genre"],
-                    "artist": row["artist"],
+                    "artist": row["artist_name"],
                     "duration": float(row["duration"]),
-                    "audio_path": row["audio_path"],
-                    "audio_download_path": row["audio_download_path"]
+                    "audio_path": row["audio"],
+                    "audio_download_path": row["audiodownload"]
                 })
+                
+                # Process genres for this song
+                if pd.notna(row["genres"]):
+                    genres = row["genres"].split(";")
+                    for genre_name in genres:
+                        genre_name = genre_name.strip()
+                        if not genre_name:
+                            continue
+                            
+                        # Check if genre exists in our map
+                        if genre_name not in genre_map:
+                            # Check if genre exists in database
+                            result = conn.execute(
+                                text("SELECT gid FROM genres WHERE genre_name = :genre_name"),
+                                {"genre_name": genre_name}
+                            )
+                            genre_id = result.scalar()
+                            
+                            # If genre doesn't exist, insert it
+                            if not genre_id:
+                                result = conn.execute(
+                                    text("INSERT INTO genres (genre_name) VALUES (:genre_name)"),
+                                    {"genre_name": genre_name}
+                                )
+                                # Get the ID of the newly inserted genre
+                                result = conn.execute(
+                                    text("SELECT gid FROM genres WHERE genre_name = :genre_name"),
+                                    {"genre_name": genre_name}
+                                )
+                                genre_id = result.scalar()
+                            
+                            genre_map[genre_name] = genre_id
+                        
+                        # Insert into song_genres junction table
+                        conn.execute(
+                            text("INSERT INTO song_genres (sid, gid) VALUES (:sid, :gid)"),
+                            {"sid": str(row["id"]), "gid": genre_map[genre_name]}
+                        )
 
             print("✅ Songs table populated.")
+            print("✅ Genres table populated.")
+            print("✅ Song-Genre relationships established.")
         else:
             print("✅ Songs table already has data.")

@@ -1,6 +1,6 @@
 # routers/users.py
 from fastapi import APIRouter, HTTPException, status
-from database.utils import user_repo, playlist_repo
+from database.utils import user_repo, playlist_repo, user_actions_repo
 from database.schema import models
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -76,4 +76,28 @@ def login(u: models.UserLogin):
     if not row or row['password'] != u.password:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials")
     return {"uid": row['uid'], "username": row['username']}
+
+# get user's total listening duration
+@router.get("/{uid}/total_listen_duration", response_model=dict)
+def get_user_total_listen_duration(uid: str):
+    # Check if user exists
+    user = user_repo.get_by_uid(uid)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get total listening duration
+    total_duration = user_actions_repo.get_user_total_listen_duration(uid)
+    
+    # Convert seconds to hours, minutes, seconds
+    hours = int(total_duration // 3600)
+    minutes = int((total_duration % 3600) // 60)
+    seconds = int(total_duration % 60)
+    
+    return {
+        "total_duration_seconds": total_duration,
+        "formatted_duration": f"{hours}h {minutes}m {seconds}s",
+        "hours": hours,
+        "minutes": minutes,
+        "seconds": seconds
+    }
 

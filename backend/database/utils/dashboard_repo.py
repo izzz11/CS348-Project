@@ -88,11 +88,13 @@ def get_global_top_genres(limit: int = 10) -> list:
     """
     sql = """
     SELECT 
-        s.genre,
+        g.genre_name AS genre,
         COALESCE(SUM(spc.total_plays), 0) AS plays
     FROM song_play_counts spc
     JOIN songs s ON s.sid = spc.sid
-    GROUP BY s.genre
+    JOIN song_genres sg ON s.sid = sg.sid
+    JOIN genres g ON sg.gid = g.gid
+    GROUP BY g.genre_name
     ORDER BY plays DESC
     LIMIT :limit
     """
