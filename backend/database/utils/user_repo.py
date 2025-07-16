@@ -119,16 +119,39 @@ def get_user_favorite_genres(uid: str):
     Get user's favorite genres based on their music actions
     """
     sql = """
-    SELECT s.genre, COUNT(*) as play_count
+    SELECT g.genre_name as genre, COUNT(*) as play_count
     FROM user_track_actions uta
     JOIN songs s ON uta.sid = s.sid
+    JOIN song_genres sg ON s.sid = sg.sid
+    JOIN genres g ON sg.gid = g.gid
     WHERE uta.uid = :uid AND (uta.favourite = TRUE OR uta.total_plays > 0)
-    GROUP BY s.genre
+    GROUP BY g.genre_name
     ORDER BY play_count DESC
-    LIMIT 5
+    LIMIT 10
     """
     result = run(sql, {"uid": uid}, fetch=True)
-    return [row['genre'] for row in result]
+    
+    # Process results to handle duplicates
+    genre_counts = {}
+    for row in result:
+        genre = row['genre']
+        # Some genres might contain multiple genres separated by commas
+        if ',' in genre:
+            sub_genres = [g.strip() for g in genre.split(',')]
+            for sub_genre in sub_genres:
+                if sub_genre in genre_counts:
+                    genre_counts[sub_genre] += row['play_count']
+                else:
+                    genre_counts[sub_genre] = row['play_count']
+        else:
+            if genre in genre_counts:
+                genre_counts[genre] += row['play_count']
+            else:
+                genre_counts[genre] = row['play_count']
+    
+    # Sort by play count and take top 5
+    sorted_genres = sorted(genre_counts.items(), key=lambda x: x[1], reverse=True)
+    return [genre for genre, count in sorted_genres[:5]]
 
 def get_user_top_artists(uid: str):
     """
@@ -174,13 +197,16 @@ def calculate_user_similarity(user1_id: str, user2_id: str):
     """
     # Get common genres
     genre_sql = """
-    SELECT COUNT(DISTINCT s1.genre) as common_genres
+    SELECT COUNT(DISTINCT g1.genre_name) as common_genres
     FROM user_track_actions uta1
     JOIN songs s1 ON uta1.sid = s1.sid
+    JOIN song_genres sg1 ON s1.sid = sg1.sid
+    JOIN genres g1 ON sg1.gid = g1.gid
     JOIN user_track_actions uta2 ON s1.sid = uta2.sid
-    JOIN songs s2 ON uta2.sid = s2.sid
+    JOIN song_genres sg2 ON uta2.sid = sg2.sid
+    JOIN genres g2 ON sg2.gid = g2.gid
     WHERE uta1.uid = :user1_id AND uta2.uid = :user2_id
-    AND s1.genre = s2.genre
+    AND g1.genre_name = g2.genre_name
     AND (uta1.favourite = TRUE OR uta2.favourite = TRUE)
     """
     genre_result = run(genre_sql, {

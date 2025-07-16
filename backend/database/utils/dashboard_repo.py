@@ -33,7 +33,7 @@ def get_user_profile(uid: str) -> dict:
     # 查询播放列表数量
     sql_playlists_count = """
     SELECT COUNT(pid) AS playlists_count
-    FROM playlists
+    FROM user_playlists
     WHERE uid = :uid
     """
     playlists_count = run(sql_playlists_count, {"uid": uid}, fetchone=True)["playlists_count"]
