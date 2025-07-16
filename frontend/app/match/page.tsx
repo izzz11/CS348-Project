@@ -1,9 +1,11 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Navbar from '../components/Navbar';
 import MatchCard from '../../components/matching/MatchCard';
 import Recommendations from '../../components/matching/Recommendations';
-import { FaUserFriends, FaHeart, FaSearch, FaStar, FaUsers, FaMusic, FaPlay } from 'react-icons/fa';
+import { FaUserFriends, FaUsers, FaStar } from 'react-icons/fa';
+import { useAuth } from '../../lib/AuthContext'; // Import the auth context
 
 const BackgroundDecoration = () => (
   <>
@@ -39,22 +41,30 @@ interface MatchResponse {
 }
 
 export default function MatchPage() {
-  const [currentUser, setCurrentUser] = useState<string>('dummy-user-id'); // Replace with actual user ID
+  const { user } = useAuth(); // Get the current user from auth context
+  const router = useRouter();
   const [candidates, setCandidates] = useState<MatchCandidate[]>([]);
   const [currentCandidateIndex, setCurrentCandidateIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'matching' | 'recommendations'>('matching');
-  const [recommendationType, setRecommendationType] = useState<'users' | 'songs' | 'playlists'>('users');
 
   useEffect(() => {
+    // Redirect if not logged in
+    if (!user) {
+      router.push('/signin');
+      return;
+    }
+    
     fetchCandidates();
-  }, []);
+  }, [user, router]);
 
   const fetchCandidates = async () => {
+    if (!user?.uid) return; // Don't fetch if no user ID
+    
     try {
       setLoading(true);
-      const response = await fetch(`/api/matching?uid=${currentUser}&page=1&limit=10`);
+      const response = await fetch(`/api/matching?uid=${user.uid}&page=1&limit=10`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch candidates');
@@ -69,7 +79,10 @@ export default function MatchPage() {
     }
   };
 
+  // Update handleLike to use the actual user ID
   const handleLike = async (uid: string) => {
+    if (!user?.uid) return;
+    
     try {
       const response = await fetch('/api/matching', {
         method: 'POST',
@@ -77,7 +90,7 @@ export default function MatchPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user1_id: currentUser,
+          user1_id: user.uid, // Use actual user ID
           user2_id: uid,
           liked_by_user1: true,
           liked_by_user2: false,
@@ -199,7 +212,7 @@ export default function MatchPage() {
                 candidate={getCurrentCandidate()}
                 onLike={handleLike}
                 onPass={handlePass}
-                currentUserId={currentUser}
+                currentUserId={user?.uid || ''}
               />
             ) : (
               <div className="text-center">
@@ -221,48 +234,7 @@ export default function MatchPage() {
           </div>
         ) : (
           <div className="max-w-6xl mx-auto">
-            {/* Recommendation Type Tabs */}
-            <div className="flex justify-center mb-8">
-              <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-2 shadow-md">
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => setRecommendationType('users')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                      recommendationType === 'users'
-                        ? 'bg-blue-500 text-white shadow-md'
-                        : 'text-gray-600 hover:text-gray-800'
-                    }`}
-                  >
-                    <FaUsers className="inline mr-2" />
-                    Users
-                  </button>
-                  <button
-                    onClick={() => setRecommendationType('songs')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                      recommendationType === 'songs'
-                        ? 'bg-green-500 text-white shadow-md'
-                        : 'text-gray-600 hover:text-gray-800'
-                    }`}
-                  >
-                    <FaMusic className="inline mr-2" />
-                    Songs
-                  </button>
-                  <button
-                    onClick={() => setRecommendationType('playlists')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                      recommendationType === 'playlists'
-                        ? 'bg-purple-500 text-white shadow-md'
-                        : 'text-gray-600 hover:text-gray-800'
-                    }`}
-                  >
-                    <FaPlay className="inline mr-2" />
-                    Playlists
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <Recommendations userId={currentUser} type={recommendationType} />
+            <Recommendations userId={user?.uid || ''} type="users" />
           </div>
         )}
       </main>
