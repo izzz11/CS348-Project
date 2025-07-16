@@ -28,6 +28,25 @@ def fetch_all_songs():
         for row in rows
     ]
 
+@router.get("/fetch_paginated", response_model=List[models.SongRead])
+def fetch_paginated_songs(page: int = Query(1), page_size: int = Query(10)):
+    rows = song_repo.get_song_paginated(page, page_size)
+    if not rows:
+        return []
+    
+    return [
+        {
+            "sid": row["sid"],
+            "name": row["name"],
+            "genre": row["genre"] if row["genre"] else "",
+            "artist": row["artist"],
+            "duration": row["duration"],
+            "audio_path": row["audio_path"],
+            "audio_download_path": row["audio_download_path"]
+        }
+        for row in rows
+    ]
+
 @router.get("/by_genre", response_model=List[models.SongRead])
 def get_by_genre(genre: str = Query(..., description="e.g. pop")):
     return song_repo.search_by_genre(genre)
