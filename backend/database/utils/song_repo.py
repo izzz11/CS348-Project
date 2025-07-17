@@ -13,6 +13,49 @@ def get_all_songs():
     """
     return run(sql, fetch=True)
 
+def get_song_paginated_filtered(
+    page: int = 1,
+    page_size: int = 20,
+    search: str | None = None
+):
+    offset = (page - 1) * page_size
+
+    if search:
+        # match name OR artist OR genre
+        sql = """
+        SELECT s.*, 
+               GROUP_CONCAT(g.genre_name SEPARATOR '; ') AS genre
+        FROM songs s
+        LEFT JOIN song_genres sg ON s.sid = sg.sid
+        LEFT JOIN genres g ON sg.gid = g.gid
+        WHERE s.name    LIKE :search
+           OR s.artist  LIKE :search
+           OR g.genre_name LIKE :search
+        GROUP BY s.sid
+        LIMIT :page_size
+        OFFSET :offset
+        """
+        params = {
+            "offset": offset,
+            "page_size": page_size,
+            "search": f"%{search}%"
+        }
+    else:
+        # no filtering
+        sql = """
+        SELECT s.*, 
+               GROUP_CONCAT(g.genre_name SEPARATOR '; ') AS genre
+        FROM songs s
+        LEFT JOIN song_genres sg ON s.sid = sg.sid
+        LEFT JOIN genres g ON sg.gid = g.gid
+        GROUP BY s.sid
+        LIMIT :page_size
+        OFFSET :offset
+        """
+        params = {"offset": offset, "page_size": page_size}
+
+    return run(sql, params, fetch=True)
+
 def search_by_genre(genre_substr: str):
     sql = """
         SELECT s.*, GROUP_CONCAT(g.genre_name SEPARATOR '; ') as genre
