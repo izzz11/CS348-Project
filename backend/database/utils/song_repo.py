@@ -13,19 +13,6 @@ def get_all_songs():
     """
     return run(sql, fetch=True)
 
-def get_song_paginated(page: int = 1, page_size: int = 20):
-    offset = (page - 1) * page_size
-    sql = """
-        SELECT s.*, GROUP_CONCAT(g.genre_name SEPARATOR '; ') as genre
-        FROM songs s
-        LEFT JOIN song_genres sg ON s.sid = sg.sid
-        LEFT JOIN genres g ON sg.gid = g.gid
-        GROUP BY s.sid
-        LIMIT :page_size
-        OFFSET :offset
-    """
-    return run(sql, {"offset": offset, "page_size": page_size}, fetch=True)
-
 def get_song_paginated_filtered(
     page: int = 1,
     page_size: int = 20,
