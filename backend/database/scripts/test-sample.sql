@@ -63,3 +63,21 @@ DELETE FROM playlist_songs WHERE pid = 'p1' AND sid = 's1';
 
 -- Delete playlist
 DELETE FROM playlists WHERE pid = 'p1';
+
+
+-- Get 10 most recent plays for user u1
+-- Add user track actions for testing recent plays
+INSERT INTO user_track_actions (uid, sid, last_listened, total_plays, favourite, rating)
+VALUES ('u1', 's1', '2024-05-01 10:00:00', 5, TRUE, 4);
+
+-- Add more plays for variety
+INSERT INTO user_track_actions (uid, sid, last_listened, total_plays, favourite, rating)
+VALUES ('u1', 's1', '2024-05-02 12:00:00', 6, FALSE, 3);
+
+
+SELECT s.* FROM songs s
+JOIN track_actions t ON s.sid = t.sid
+WHERE t.uid = 'u1' AND t.last_listened IS NOT NULL
+ORDER BY t.last_listened DESC
+LIMIT 10;
+
