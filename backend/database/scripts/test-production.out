@@ -1,3 +1,4 @@
+mysql: [Warning] Using a password on the command line interface can be insecure.
 uid	username	name	age	password	email	country
 u1	eloise	Eloise Kim	22	password1	eloise@example.com	Canada
 u10	mia	Mia MÃ¼ller	26	password10	mia@example.com	Germany
@@ -24,68 +25,86 @@ emma	Top EDM	0
 noah	Focus Flow	1
 olivia	Global Beats	0
 playlist	song	artist
-Chill Mix	Akamas Run	K4MMERER
-Chill Mix	Fireballs	Fresh Body Shop
-Chill Mix	Until They Break	Tizmax
-Workout Boost	Wow!	J.L.T
-Workout Boost	A Talking Lust	Cometa
-Workout Boost	All Which Seem Real	Cometa
-Morning Jazz	Ready Set Stay	Grace Kelly
-Morning Jazz	Burning flame	Confushian
-Morning Jazz	Connecticut	Confushian
-Top EDM	The Many Words that don't Exist	Cometa
-Top EDM	Down south	Confushian
-Top EDM	World keeps turning	Confushian
-Focus Flow	The Sadness of Birth	Cometa
-Focus Flow	You are You	Cometa
-Focus Flow	Emotion	SRX
-Global Beats	Verde	Hardi Splett
-Global Beats	rock_d'enfer	Courboulès David
-Global Beats	The blues begin	Mouse from Hell
+Chill Mix	07-Anaesthesia	Fusz
+Chill Mix	Dawn	Le Fol
+Chill Mix	06-Down	Fusz
+Workout Boost	09-Teenage passion	Fusz
+Workout Boost	10-Erratic	Fusz
+Workout Boost	11-Starshape	Fusz
+Morning Jazz	La salle de la destinï¿½e	 ENIGMA63
+Morning Jazz	La Faucheuse	 ENIGMA63
+Morning Jazz	13- Slipstream	Fusz
+Top EDM	Polteirgests	 ENIGMA63
+Top EDM	Les voix d'outre-tombe	 ENIGMA63
+Top EDM	Le manoir maudit	 ENIGMA63
+Focus Flow	Faded War (Instrumental Version)	Josh Woodward (Instrumental Versions)
+Focus Flow	Epilogue (Instrumental Version)	Josh Woodward (Instrumental Versions)
+Focus Flow	Sunny Sunday Afternoon	DJ Amy Moon
+Global Beats	Ableton Live Psytrance Project - Hipgnosis	Speedsound Loops
+Global Beats	Bass-Ic Bi-Ology	DJ Amy Moon
+Global Beats	Autumnal Glow	Wobinidan
 username	song_name	total_plays	favourite	rating
-eloise	Until They Break	12	1	5
-amy	Wow!	6	0	4
-liam	Ready Set Stay	8	1	5
-emma	The Many Words that don't Exist	3	0	3
-noah	The Sadness of Birth	14	1	4
-sid	name	genre	artist	duration	audio_path	audio_download_path
-1007059	Until They Break	rock	Tizmax	192	https://prod-1.storage.jamendo.com/?trackid=1007059&format=mp31&from=mgNrwroNTi1abEjJsj7nYw%3D%3D%7C2KTKTQKLb7dJcUeyI2CAPQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/1007059/mp31/
-1009193	Akamas Run	electronic,dance,trance	K4MMERER	259	https://prod-1.storage.jamendo.com/?trackid=1009193&format=mp31&from=v2ZAzWrB%2F8cm%2F5EAfvLJ2Q%3D%3D%7CVvD8zajKD%2B2b5vLwI5TW8Q%3D%3D	https://prod-1.storage.jamendo.com/download/track/1009193/mp31/
-1009672	Fireballs	pop,electronic	Fresh Body Shop	147	https://prod-1.storage.jamendo.com/?trackid=1009672&format=mp31&from=vT5RaJXZmFYScwXejXmXLw%3D%3D%7C%2B2I0SzIS%2BNzl92nY57QULQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/1009672/mp31/
-1011781	Wow!	dance,electronic,house	J.L.T	375	https://prod-1.storage.jamendo.com/?trackid=1011781&format=mp31&from=kBb8HUc9TX7LT9rXo0jG%2Bw%3D%3D%7CUKzvDyRKZecrozRsZZ3ZFA%3D%3D	https://prod-1.storage.jamendo.com/download/track/1011781/mp31/
-101732	A Talking Lust	electronica,rock,electronic	Cometa	264	https://prod-1.storage.jamendo.com/?trackid=101732&format=mp31&from=PTXdbSf6ek%2F%2ButswaGz%2BXg%3D%3D%7C%2Fc%2ByqamQCg4PGfFkVCJ95A%3D%3D	https://prod-1.storage.jamendo.com/download/track/101732/mp31/
-101739	All Which Seem Real	electronica,rock,electronic	Cometa	340	https://prod-1.storage.jamendo.com/?trackid=101739&format=mp31&from=O9kT47odjnY41MoN5NVBXw%3D%3D%7CymhAnz3xcwTZDnVdUklyyA%3D%3D	https://prod-1.storage.jamendo.com/download/track/101739/mp31/
-1017514	Ready Set Stay	pop	Grace Kelly	178	https://prod-1.storage.jamendo.com/?trackid=1017514&format=mp31&from=xgtrJENA6dS0jDzSFIj8ew%3D%3D%7Ch19JSFWGdBRM6L%2Fz4jP1Ug%3D%3D	https://prod-1.storage.jamendo.com/download/track/1017514/mp31/
-1017669	Burning flame	blues	Confushian	276	https://prod-1.storage.jamendo.com/?trackid=1017669&format=mp31&from=XTpWNXv8uOfu5QVw%2BbNUow%3D%3D%7CqRrFwOR9Nz6PMbxGC95SXg%3D%3D	https://prod-1.storage.jamendo.com/download/track/1017669/mp31/
-1017676	Connecticut	blues	Confushian	199	https://prod-1.storage.jamendo.com/?trackid=1017676&format=mp31&from=waiJgMLN%2B4D8ABzP3GRl%2FA%3D%3D%7Ck6BbO28%2FgyEnYO8el8bGRQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/1017676/mp31/
-101788	The Many Words that don't Exist	electronica,rock,electronic	Cometa	292	https://prod-1.storage.jamendo.com/?trackid=101788&format=mp31&from=ZTz6gqFrG0EzzgWK9J3BvA%3D%3D%7C6AFATyGeCNU96jb%2F8R1Mmw%3D%3D	https://prod-1.storage.jamendo.com/download/track/101788/mp31/
-sid	name	genre	artist	duration	audio_path	audio_download_path
-1121816	Culture Shock	ambient	Master of the Subway Ninjas	67	https://prod-1.storage.jamendo.com/?trackid=1121816&format=mp31&from=x6ayquD45Bqe%2FURjn9lvhw%3D%3D%7Crflz7OIJMflX8nwnbu5CYg%3D%3D	https://prod-1.storage.jamendo.com/download/track/1121816/mp31/
-1121828	London Dungeon	ambient	Master of the Subway Ninjas	235	https://prod-1.storage.jamendo.com/?trackid=1121828&format=mp31&from=%2Bl78OkslDxrBdDUM1zv05g%3D%3D%7CrusKgfcpIZ9VbH6tM5yEZg%3D%3D	https://prod-1.storage.jamendo.com/download/track/1121828/mp31/
-127609	Relax	ambient	Sole Symphony	175	https://prod-1.storage.jamendo.com/?trackid=127609&format=mp31&from=ym26aN78K%2Fvgk%2BG12MsOEA%3D%3D%7CYjgfmcbj7dd1QwTo4iAquA%3D%3D	https://prod-1.storage.jamendo.com/download/track/127609/mp31/
-128810	Magdala	ambient	Laurent Danis	111	https://prod-1.storage.jamendo.com/?trackid=128810&format=mp31&from=zXjNya%2FWpnXGHxdf9swrvg%3D%3D%7CaqQUp4ssCl7ObM2tYjZkkw%3D%3D	https://prod-1.storage.jamendo.com/download/track/128810/mp31/
-131261	Beatrice	ambient	michael wehr	244	https://prod-1.storage.jamendo.com/?trackid=131261&format=mp31&from=VeezxiPMP%2FwN4s5NIeRyCQ%3D%3D%7CIVUdo0dqMHDNRuzomM1P2A%3D%3D	https://prod-1.storage.jamendo.com/download/track/131261/mp31/
-1442496	Mikado_Pheasant	ambient	SoulWhat	59	https://prod-1.storage.jamendo.com/?trackid=1442496&format=mp31&from=%2ByrLH3Sy9Kwc232ZiJ4VvQ%3D%3D%7CBB0fG7U9KX12DbGPIM%2BKMw%3D%3D	https://prod-1.storage.jamendo.com/download/track/1442496/mp31/
-1665968	Bruma	ambient	João Pedro Moreira	436	https://prod-1.storage.jamendo.com/?trackid=1665968&format=mp31&from=g00arQz4TDov89XVHaouow%3D%3D%7CV0NYpz6khax1EXT1oeLV6Q%3D%3D	https://prod-1.storage.jamendo.com/download/track/1665968/mp31/
-1666005	Amanhecer	ambient	João Pedro Moreira	423	https://prod-1.storage.jamendo.com/?trackid=1666005&format=mp31&from=yx475HjpWVyQLuvB05vH%2Fw%3D%3D%7CwtS6u%2BS%2FEeia70bw%2BnJQEw%3D%3D	https://prod-1.storage.jamendo.com/download/track/1666005/mp31/
-1744189	Magellanic Clouds-Whispering Stars	ambient	The Asgardia Music Conglomerate	425	https://prod-1.storage.jamendo.com/?trackid=1744189&format=mp31&from=3nrcQ5%2F2kswCko50ZWu%2BOA%3D%3D%7CJwRQfnyD%2BQw5v9lBOeFS5A%3D%3D	https://prod-1.storage.jamendo.com/download/track/1744189/mp31/
-1776759	Going Home	ambient	Solxis	206	https://prod-1.storage.jamendo.com/?trackid=1776759&format=mp31&from=%2Bjy8d%2FIj%2B2gHeEMZJubtmg%3D%3D%7CkC4x%2FBE2OPu6ZV6ZaZJSYw%3D%3D	https://prod-1.storage.jamendo.com/download/track/1776759/mp31/
-sid	name	genre	artist	duration	audio_path	audio_download_path
-1017514	Ready Set Stay	pop	Grace Kelly	178	https://prod-1.storage.jamendo.com/?trackid=1017514&format=mp31&from=xgtrJENA6dS0jDzSFIj8ew%3D%3D%7Ch19JSFWGdBRM6L%2Fz4jP1Ug%3D%3D	https://prod-1.storage.jamendo.com/download/track/1017514/mp31/
-sid	name	genre	artist	duration	audio_path	audio_download_path
-1500645	Royalty Free Calm Uplifting Ambient Guitars	pop,corporate	RainstepProduction	66	https://prod-1.storage.jamendo.com/?trackid=1500645&format=mp31&from=%2F3MQ%2FWUTojPiVGdRQvVncQ%3D%3D%7CPYPy00FQy1HLRNScZHA5GA%3D%3D	https://prod-1.storage.jamendo.com/download/track/1500645/mp31/
-1534150	Fashion Calm Logo	pop,logo	AlexZavesa	13	https://prod-1.storage.jamendo.com/?trackid=1534150&format=mp31&from=O5TOGJqZcnHqigvT5O1K2Q%3D%3D%7ClzxxqB488oDjfuurgQ%2BRew%3D%3D	https://prod-1.storage.jamendo.com/download/track/1534150/mp31/
-2004071	Calm Nights (Meditation Music)	ambient,newage	StimiBeats	175	https://prod-1.storage.jamendo.com/?trackid=2004071&format=mp31&from=cJ4xElZhWE5Rgws4UR8fbQ%3D%3D%7Cu6spX49MfQNFqvA%2BJ3LYsQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/2004071/mp31/
-2029666	Calm Jazz Background	jazz	Oleksii Bezsalov	132	https://prod-1.storage.jamendo.com/?trackid=2029666&format=mp31&from=xlnFuiP%2BXb9s2CHXBrXT1Q%3D%3D%7C%2FUrLEAAUEwC8T2BtlcGwWw%3D%3D	https://prod-1.storage.jamendo.com/download/track/2029666/mp31/
-2175029	Curepipe Calm	jazz	Kenny Leonore	158	https://prod-1.storage.jamendo.com/?trackid=2175029&format=mp31&from=4wY9PO7PufZN%2BLoN6H%2B8wA%3D%3D%7Cs5E8UhunTzWGqT2%2Fun8efg%3D%3D	https://prod-1.storage.jamendo.com/download/track/2175029/mp31/
-sid	name	genre	artist	duration	audio_path	audio_download_path
-1007059	Until They Break	rock	Tizmax	192	https://prod-1.storage.jamendo.com/?trackid=1007059&format=mp31&from=mgNrwroNTi1abEjJsj7nYw%3D%3D%7C2KTKTQKLb7dJcUeyI2CAPQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/1007059/mp31/
-1009672	Fireballs	pop,electronic	Fresh Body Shop	147	https://prod-1.storage.jamendo.com/?trackid=1009672&format=mp31&from=vT5RaJXZmFYScwXejXmXLw%3D%3D%7C%2B2I0SzIS%2BNzl92nY57QULQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/1009672/mp31/
-1017514	Ready Set Stay	pop	Grace Kelly	178	https://prod-1.storage.jamendo.com/?trackid=1017514&format=mp31&from=xgtrJENA6dS0jDzSFIj8ew%3D%3D%7Ch19JSFWGdBRM6L%2Fz4jP1Ug%3D%3D	https://prod-1.storage.jamendo.com/download/track/1017514/mp31/
-1017676	Connecticut	blues	Confushian	199	https://prod-1.storage.jamendo.com/?trackid=1017676&format=mp31&from=waiJgMLN%2B4D8ABzP3GRl%2FA%3D%3D%7Ck6BbO28%2FgyEnYO8el8bGRQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/1017676/mp31/
-1017997	World keeps turning	blues	Confushian	175	https://prod-1.storage.jamendo.com/?trackid=1017997&format=mp31&from=eOkNp5QA7r9H8v7qJF4h8Q%3D%3D%7CS%2FUK%2FTjJL06kWBUBQTDGMw%3D%3D	https://prod-1.storage.jamendo.com/download/track/1017997/mp31/
-1018000	Down south	country,blues	Confushian	159	https://prod-1.storage.jamendo.com/?trackid=1018000&format=mp31&from=MSEaoIMnqKHc6%2Bkh8m5tWA%3D%3D%7CUy1joMPr9PIqS%2B%2BbP8uF5Q%3D%3D	https://prod-1.storage.jamendo.com/download/track/1018000/mp31/
-1026041	Verde	jazz	Hardi Splett	183	https://prod-1.storage.jamendo.com/?trackid=1026041&format=mp31&from=Dp3XH1mGNjjpGneDTok33A%3D%3D%7CU3BiniWn0oJ4NxOrN6Xp1A%3D%3D	https://prod-1.storage.jamendo.com/download/track/1026041/mp31/
-102893	rock_d'enfer	rock,metal,dance	Courboulès David	168	https://prod-1.storage.jamendo.com/?trackid=102893&format=mp31&from=75PaCX2cR6k97Yy%2BxwKC2w%3D%3D%7CCYFb51JeErhPXp9X9QyfoQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/102893/mp31/
-103885	Bluesy All Alone	blues,pop,rock	Jampy	60	https://prod-1.storage.jamendo.com/?trackid=103885&format=mp31&from=tzb58wwF3qbCUWIt22uvHw%3D%3D%7Cqpwzq7ZqpbVyWqDBmg6qLA%3D%3D	https://prod-1.storage.jamendo.com/download/track/103885/mp31/
-103892	Sunday Evening	jazz	Jampy	156	https://prod-1.storage.jamendo.com/?trackid=103892&format=mp31&from=%2B%2Fln3lkRh5Sa0qqXBnPHsA%3D%3D%7C1Wb4uiChj31XaBGksDvq3A%3D%3D	https://prod-1.storage.jamendo.com/download/track/103892/mp31/
+eloise	06-Down	12	1	5
+amy	09-Teenage passion	6	0	4
+liam	La salle de la destinï¿½e	8	1	5
+emma	Polteirgests	3	0	3
+noah	Faded War (Instrumental Version)	14	1	4
+sid	name	artist	duration	audio_path	audio_download_path
+100000	06-Down	Fusz	154	https://prod-1.storage.jamendo.com/?trackid=100000&format=mp31&from=Iinjlh7IGNV6AwrvZwG7wQ%3D%3D%7C8QX0h5faStVQxJVHYLCKKw%3D%3D	https://prod-1.storage.jamendo.com/download/track/100000/mp31/
+100001	07-Anaesthesia	Fusz	282	https://prod-1.storage.jamendo.com/?trackid=100001&format=mp31&from=xVQTXoS7%2BhN7uOq%2Bdg%2FQrA%3D%3D%7Cnabe2dEiFZvgcTbr7I8fbg%3D%3D	https://prod-1.storage.jamendo.com/download/track/100001/mp31/
+1000029	Dawn	Le Fol	247	https://prod-1.storage.jamendo.com/?trackid=1000029&format=mp31&from=6tBylS%2FGVS2IZoqjcp0%2FhQ%3D%3D%7CGoBJQ8Mn8XGp6VPo%2BTxGCw%3D%3D	https://prod-1.storage.jamendo.com/download/track/1000029/mp31/
+100003	09-Teenage passion	Fusz	144	https://prod-1.storage.jamendo.com/?trackid=100003&format=mp31&from=5U7sURS1NKHcEaUE%2FcimJg%3D%3D%7CEnr4J22MycDO6NN50I4WyQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/100003/mp31/
+100004	10-Erratic	Fusz	196	https://prod-1.storage.jamendo.com/?trackid=100004&format=mp31&from=u9fLLV32N6t5L0cARdDVeQ%3D%3D%7CIsiBIHTntMsLvxfV9caQVg%3D%3D	https://prod-1.storage.jamendo.com/download/track/100004/mp31/
+100005	11-Starshape	Fusz	198	https://prod-1.storage.jamendo.com/?trackid=100005&format=mp31&from=EEiMgPGOClm0HxnqXHPf6A%3D%3D%7CiU8UnSWc9yso0ca0BNG4MQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/100005/mp31/
+1000056	La salle de la destinï¿½e	 ENIGMA63	546	https://prod-1.storage.jamendo.com/?trackid=1000056&format=mp31&from=FKsmNT6wb4fLMA%2FPGnOnRg%3D%3D%7CQ2uA%2BiSYPvuwEN8TpJZ%2F0Q%3D%3D	https://prod-1.storage.jamendo.com/download/track/1000056/mp31/
+1000057	La Faucheuse	 ENIGMA63	329	https://prod-1.storage.jamendo.com/?trackid=1000057&format=mp31&from=SHA0s3W41uTsXZow1BOXFg%3D%3D%7CIESxtrWO5GTiFYFzl0nScw%3D%3D	https://prod-1.storage.jamendo.com/download/track/1000057/mp31/
+100006	13- Slipstream	Fusz	354	https://prod-1.storage.jamendo.com/?trackid=100006&format=mp31&from=25EZUlGQZImKADW%2Fc%2BHJ%2BQ%3D%3D%7CUQdRLgjvMq5EyitIPRNsAQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/100006/mp31/
+1000060	Polteirgests	 ENIGMA63	458	https://prod-1.storage.jamendo.com/?trackid=1000060&format=mp31&from=U12817msL9r3jJLJ%2BOhpkA%3D%3D%7CRd8UCMYiVXGgDANDM13H7Q%3D%3D	https://prod-1.storage.jamendo.com/download/track/1000060/mp31/
+sid	name	artist	duration	audio_path	audio_download_path
+1017508	Night Time Star	Grace Kelly	315	https://prod-1.storage.jamendo.com/?trackid=1017508&format=mp31&from=JUph1NCW7mKX8TY59apjxg%3D%3D%7C6YXsZ52EOtuEugrxgjTHsQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/1017508/mp31/
+1017514	Ready Set Stay	Grace Kelly	178	https://prod-1.storage.jamendo.com/?trackid=1017514&format=mp31&from=sfsO1vJ0an0E7ueezZXGPQ%3D%3D%7CkIJXTOjPEtGDYoPEbuFK5Q%3D%3D	https://prod-1.storage.jamendo.com/download/track/1017514/mp31/
+sid	name	artist	duration	audio_path	audio_download_path
+1086947	SiJ - Calm Heartbeat	SiJ	268	https://prod-1.storage.jamendo.com/?trackid=1086947&format=mp31&from=cRZ6FTZUqK1rRz0iE9G7Vg%3D%3D%7Cm1Q9X5I%2FTW54lwppWQUDBA%3D%3D	https://prod-1.storage.jamendo.com/download/track/1086947/mp31/
+1086966	SiJ - Calm	SiJ	272	https://prod-1.storage.jamendo.com/?trackid=1086966&format=mp31&from=Bnk%2FJ06YddCep2Mr9HeASw%3D%3D%7CRp5%2B6JoZDQlDn2N77EyeFA%3D%3D	https://prod-1.storage.jamendo.com/download/track/1086966/mp31/
+1091961	Mi Calma (El Ganjoman)	Ej Rams Records	285	https://prod-1.storage.jamendo.com/?trackid=1091961&format=mp31&from=WYzc6NgV%2BI0uR61CFJcrrA%3D%3D%7CzHrsSrk77FKleCkJ8KJnyg%3D%3D	https://prod-1.storage.jamendo.com/download/track/1091961/mp31/
+1168472	Calm	softspace	911	https://prod-1.storage.jamendo.com/?trackid=1168472&format=mp31&from=GbZdGsgjqIRPHcp%2BgOeteQ%3D%3D%7CMtnRw5W6kfvk8PmawaUZIA%3D%3D	https://prod-1.storage.jamendo.com/download/track/1168472/mp31/
+1244133	Sï¿½ A Luz Me Acalma	Alma Livre 	198	https://prod-1.storage.jamendo.com/?trackid=1244133&format=mp31&from=n0DB7lh2tcGsq2pZxr9BCQ%3D%3D%7CcFde4if1MrP%2BWsR%2Fz45hZw%3D%3D	https://prod-1.storage.jamendo.com/download/track/1244133/mp31/
+1274487	Calm Forest	LoneTreeMusic	73	https://prod-1.storage.jamendo.com/?trackid=1274487&format=mp31&from=uye4csTMbtTKKLJ%2BN%2FjfEw%3D%3D%7Cf68wtth%2FWOVjLc%2Bm2rPFNQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/1274487/mp31/
+1300739	Cool and  Calm Riddim Prod. BY J.A.R	Yuanan &quot;J.A.R&quot;	237	https://prod-1.storage.jamendo.com/?trackid=1300739&format=mp31&from=5kfCIHVLJlzMfGYJnd3x5A%3D%3D%7CzFC%2BFGpDZwWWZfQaSHCddQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/1300739/mp31/
+1333118	6. Calma	UnderBlow	87	https://prod-1.storage.jamendo.com/?trackid=1333118&format=mp31&from=4G2Mmpkl9O2UXHv7MbPRJw%3D%3D%7C%2B%2BezsURAExbubi9Tt3Jl9A%3D%3D	https://prod-1.storage.jamendo.com/download/track/1333118/mp31/
+1353701	Canon No.4 / Calm Piano	Micha? Ja?ochowski	144	https://prod-1.storage.jamendo.com/?trackid=1353701&format=mp31&from=MKFX%2BVeJx7EYJpw0hV1eoQ%3D%3D%7CxcqpU5v%2BvJC90Ir2j%2BDtoQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/1353701/mp31/
+1358680	Calm Piano	Aliaksei Yukhnevich	128	https://prod-1.storage.jamendo.com/?trackid=1358680&format=mp31&from=i21nKum9ZRON1pVULt5t2Q%3D%3D%7Cel%2B35ee%2Bhs0laAKXwQeNMQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/1358680/mp31/
+sid	name	artist	duration	audio_path	audio_download_path
+100000	06-Down	Fusz	154	https://prod-1.storage.jamendo.com/?trackid=100000&format=mp31&from=Iinjlh7IGNV6AwrvZwG7wQ%3D%3D%7C8QX0h5faStVQxJVHYLCKKw%3D%3D	https://prod-1.storage.jamendo.com/download/track/100000/mp31/
+100003	09-Teenage passion	Fusz	144	https://prod-1.storage.jamendo.com/?trackid=100003&format=mp31&from=5U7sURS1NKHcEaUE%2FcimJg%3D%3D%7CEnr4J22MycDO6NN50I4WyQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/100003/mp31/
+100004	10-Erratic	Fusz	196	https://prod-1.storage.jamendo.com/?trackid=100004&format=mp31&from=u9fLLV32N6t5L0cARdDVeQ%3D%3D%7CIsiBIHTntMsLvxfV9caQVg%3D%3D	https://prod-1.storage.jamendo.com/download/track/100004/mp31/
+100005	11-Starshape	Fusz	198	https://prod-1.storage.jamendo.com/?trackid=100005&format=mp31&from=EEiMgPGOClm0HxnqXHPf6A%3D%3D%7CiU8UnSWc9yso0ca0BNG4MQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/100005/mp31/
+100031	Sunny Sunday Afternoon	DJ Amy Moon	199	https://prod-1.storage.jamendo.com/?trackid=100031&format=mp31&from=93xCdu8wrlx5AjCsCyIFEw%3D%3D%7CQ2uLlH9RCInH6rECcG20Ww%3D%3D	https://prod-1.storage.jamendo.com/download/track/100031/mp31/
+100092	If I lie	Wobinidan	200	https://prod-1.storage.jamendo.com/?trackid=100092&format=mp31&from=qIU%2FIACyjzYTZ7IZQfMJDw%3D%3D%7CWGO1jsnUYw9kKSh2u1CbLQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/100092/mp31/
+1000938	Juku'ov-Spade	Papy Poppers	127	https://prod-1.storage.jamendo.com/?trackid=1000938&format=mp31&from=BWpaebwKmDHn%2FWep1clo9w%3D%3D%7CAZBMif8lTgdzGdcfzX53TQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/1000938/mp31/
+100130	depreciation	Liquid concept	200	https://prod-1.storage.jamendo.com/?trackid=100130&format=mp31&from=QHAQV1w%2B9Ll292ICOBi3UQ%3D%3D%7CtE7FdfMplcuFWF6EOG3bhQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/100130/mp31/
+1002893	In(s)tro(mental)	Philosofer Stoned	196	https://prod-1.storage.jamendo.com/?trackid=1002893&format=mp31&from=8v94CdSNQkIWBRWL0m6qxw%3D%3D%7CsNbu0QXHLN6Iu7aWw0y0cg%3D%3D	https://prod-1.storage.jamendo.com/download/track/1002893/mp31/
+1002895	$hark$	Philosofer Stoned	193	https://prod-1.storage.jamendo.com/?trackid=1002895&format=mp31&from=HbDaCevQv9lKSxQ051B2tA%3D%3D%7C5obvTvzk9hesrz2JyxYucw%3D%3D	https://prod-1.storage.jamendo.com/download/track/1002895/mp31/
+sid	name	artist	duration	audio_path	audio_download_path	genre
+100000	06-Down	Fusz	154	https://prod-1.storage.jamendo.com/?trackid=100000&format=mp31&from=Iinjlh7IGNV6AwrvZwG7wQ%3D%3D%7C8QX0h5faStVQxJVHYLCKKw%3D%3D	https://prod-1.storage.jamendo.com/download/track/100000/mp31/	grunge
+100001	07-Anaesthesia	Fusz	282	https://prod-1.storage.jamendo.com/?trackid=100001&format=mp31&from=xVQTXoS7%2BhN7uOq%2Bdg%2FQrA%3D%3D%7Cnabe2dEiFZvgcTbr7I8fbg%3D%3D	https://prod-1.storage.jamendo.com/download/track/100001/mp31/	rock,grunge
+1000029	Dawn	Le Fol	247	https://prod-1.storage.jamendo.com/?trackid=1000029&format=mp31&from=6tBylS%2FGVS2IZoqjcp0%2FhQ%3D%3D%7CGoBJQ8Mn8XGp6VPo%2BTxGCw%3D%3D	https://prod-1.storage.jamendo.com/download/track/1000029/mp31/	filmscore,ambient
+100003	09-Teenage passion	Fusz	144	https://prod-1.storage.jamendo.com/?trackid=100003&format=mp31&from=5U7sURS1NKHcEaUE%2FcimJg%3D%3D%7CEnr4J22MycDO6NN50I4WyQ%3D%3D	https://prod-1.storage.jamendo.com/download/track/100003/mp31/	grunge
+100004	10-Erratic	Fusz	196	https://prod-1.storage.jamendo.com/?trackid=100004&format=mp31&from=u9fLLV32N6t5L0cARdDVeQ%3D%3D%7CIsiBIHTntMsLvxfV9caQVg%3D%3D	https://prod-1.storage.jamendo.com/download/track/100004/mp31/	grunge
+sid	name	artist	duration	audio_path	audio_download_path	genre
+992823	Angel	Grimoff	213	https://prod-1.storage.jamendo.com/?trackid=992823&format=mp31&from=ld86CWA1r7DQNe7OzyOlgA%3D%3D%7Cv%2B5U1l41%2FK9htlE02Vxu4Q%3D%3D	https://prod-1.storage.jamendo.com/download/track/992823/mp31/	rock,metal,powermetal
+992829	Loss	Grimoff	466	https://prod-1.storage.jamendo.com/?trackid=992829&format=mp31&from=9zpIYxZkHnPrGSGLd0fKXA%3D%3D%7CWbYVdOYejt87LDEiX5rkAg%3D%3D	https://prod-1.storage.jamendo.com/download/track/992829/mp31/	rock,metal,powermetal
+sid	name	artist	total_plays
+1000080	Faded War (Instrumental Version)	Josh Woodward (Instrumental Versions)	14
+100000	06-Down	Fusz	12
+1000056	La salle de la destinï¿½e	 ENIGMA63	8
+100003	09-Teenage passion	Fusz	6
+1000060	Polteirgests	 ENIGMA63	3
+artist	total_plays
+Fusz	18
+Josh Woodward (Instrumental Versions)	14
+ ENIGMA63	11
+genre_name	total_plays
+grunge	18
+pop	14
+techno,electronic	11
