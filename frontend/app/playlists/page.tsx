@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FaPlus, FaTrash, FaEdit, FaLock, FaLockOpen, FaMusic, FaHeadphones, FaUsers, FaHeart } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaLock, FaLockOpen, FaMusic, FaHeadphones, FaHeart } from 'react-icons/fa';
 import { useAuth } from '../../lib/AuthContext';
 
 type Playlist = {
@@ -12,11 +12,11 @@ type Playlist = {
   description: string;
   private: boolean;
   is_favourite: boolean;
+  songCount: number;
 };
 
 export default function Playlists() {
   const { user } = useAuth();
-
   const router = useRouter();
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,35 +28,45 @@ export default function Playlists() {
     private: false,
   });
 
-  // Fetch user's playlists
+  // Fetch playlists and song counts
   useEffect(() => {
     const fetchPlaylists = async () => {
       try {
-        if (!user?.uid) {
-          return; // Wait for user to be loaded
-        }
-  
-        // Use the local API route instead of the backend endpoint
+        if (!user?.uid) return;
+
+        setLoading(true);
         const response = await fetch(`/api/playlists?uid=${user.uid}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch playlists');
-        }
+        if (!response.ok) throw new Error('Failed to fetch playlists');
         const data = await response.json();
-        // Sort so that the playlist with is_favourite === true is at the beginning
-        const sortedData = Array.isArray(data)
-          ? [...data].sort((a, b) => (b.is_favourite ? 1 : 0) - (a.is_favourite ? 1 : 0))
-          : data;
-        setPlaylists(sortedData);
-        setLoading(false);
-      } catch (err) {
+        const base = Array.isArray(data) ? data : data.playlists;
+
+        // Sort favourites first
+        const sorted = [...base].sort(
+          (a, b) => (b.is_favourite ? 1 : 0) - (a.is_favourite ? 1 : 0)
+        );
+
+        // Enrich with song counts
+        const enriched: Playlist[] = await Promise.all(
+          sorted.map(async (pl: any) => {
+            const resSongs = await fetch(`/api/playlist-songs/${pl.pid}`);
+            if (!resSongs.ok) {
+              return { ...pl, songCount: 0 };
+            }
+            const songsData = await resSongs.json();
+            const list = songsData.songs ?? songsData;
+            return { ...pl, songCount: Array.isArray(list) ? list.length : 0 };
+          })
+        );
+
+        setPlaylists(enriched);
+      } catch {
         setError('Failed to fetch playlists. Please try again later.');
+      } finally {
         setLoading(false);
       }
     };
-  
-    if (user) {
-      fetchPlaylists();
-    }
+
+    if (user) fetchPlaylists();
   }, [user]);
 
   const handleCreatePlaylist = async (e: React.FormEvent) => {
@@ -66,12 +76,9 @@ export default function Playlists() {
         setError('User not logged in.');
         return;
       }
-      
       const response = await fetch(`/api/playlists?uid=${user.uid}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: newPlaylist.name,
           description: newPlaylist.description,
@@ -80,16 +87,12 @@ export default function Playlists() {
         credentials: 'include',
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to create playlist');
-      }
-
+      if (!response.ok) throw new Error('Failed to create playlist');
       const data = await response.json();
-      setPlaylists([...playlists, data as Playlist]);
+      setPlaylists(prev => [...prev, { ...data, songCount: 0 } as Playlist]);
       setShowCreateModal(false);
       setNewPlaylist({ name: '', description: '', private: false });
-    } catch (err) {
-      console.error('Error creating playlist:', err);
+    } catch {
       setError('Failed to create playlist. Please try again.');
     }
   };
@@ -100,14 +103,9 @@ export default function Playlists() {
         method: 'DELETE',
         credentials: 'include',
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete playlist');
-      }
-
-      setPlaylists(playlists.filter(p => p.pid !== pid));
-      
-    } catch (err) {
+      if (!response.ok) throw new Error('Failed to delete playlist');
+      setPlaylists(prev => prev.filter(p => p.pid !== pid));
+    } catch {
       setError('Failed to delete playlist. Please try again.');
     }
   };
@@ -128,15 +126,12 @@ export default function Playlists() {
           <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
             My Playlists
           </h1>
-          <div className="flex gap-4">
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-[#6C5CE7] hover:bg-[#5A4ED1] text-white px-6 py-2.5 rounded-xl transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-indigo-200"
-            >
-              <FaPlus /> Create Playlist
-            </button>
-            
-          </div>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="bg-[#6C5CE7] hover:bg-[#5A4ED1] text-white px-6 py-2.5 rounded-xl transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-indigo-200"
+          >
+            <FaPlus /> Create Playlist
+          </button>
         </div>
 
         {loading ? (
@@ -162,20 +157,16 @@ export default function Playlists() {
           </div>
         ) : (
           <div className="max-w-2xl mx-auto grid grid-cols-1 gap-6">
-            {playlists.map((playlist) => (
+            {playlists.map(playlist => (
               <div
                 key={playlist.pid}
                 onClick={() => handlePlaylistClick(playlist.pid)}
                 className="group relative overflow-hidden rounded-xl cursor-pointer transition-all duration-300"
               >
-                {/* Playlist Card Background */}
                 <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-purple-500 opacity-90 group-hover:opacity-100 transition-opacity" />
-                
-                {/* Playlist Visual Element */}
                 <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500" />
                 <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/20 rounded-full blur-lg group-hover:scale-150 transition-transform duration-700" />
-                
-                {/* Content */}
+
                 <div className="relative p-6 h-48 flex flex-col justify-between">
                   <div>
                     <div className="flex justify-between items-start mb-2">
@@ -190,7 +181,7 @@ export default function Playlists() {
                         )}
                         {!playlist.is_favourite ? (
                           <button
-                            onClick={(e) => {
+                            onClick={e => {
                               e.stopPropagation();
                               handleDeletePlaylist(playlist.pid);
                             }}
@@ -199,7 +190,7 @@ export default function Playlists() {
                             <FaTrash size={16} />
                           </button>
                         ) : (
-                          <FaHeart size={16} className='text-red-300' />
+                          <FaHeart size={16} className="text-red-300" />
                         )}
                       </div>
                     </div>
@@ -207,24 +198,25 @@ export default function Playlists() {
                       {playlist.description}
                     </p>
                   </div>
-                  
-                  {/* Bottom Info */}
-                  <div className="flex items-center gap-2 text-white/60 text-sm">
-                    <FaUsers size={14} />
-                    <span>Shared with users</span>
-                  </div>
-                </div>
 
-                {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                  <FaMusic className="text-white opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:scale-150 duration-300" size={24} />
+                  <div className="flex items-center gap-2 text-white/60 text-sm">
+                    <FaMusic size={14} />
+                    <span>
+                      {playlist.songCount === 0 ? 'No songs' 
+                      : `${playlist.songCount} song${playlist.songCount !== 1 ? 's' : ''}`}
+
+                    </span>
+                  </div>
+
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                    <FaMusic className="text-white opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:scale-150 duration-300" size={24} />
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
 
-        {/* Create Playlist Modal */}
         {showCreateModal && (
           <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-xl">
@@ -235,7 +227,7 @@ export default function Playlists() {
                   <input
                     type="text"
                     value={newPlaylist.name}
-                    onChange={(e) => setNewPlaylist({ ...newPlaylist, name: e.target.value })}
+                    onChange={e => setNewPlaylist({ ...newPlaylist, name: e.target.value })}
                     className="w-full bg-gray-50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#6C5CE7] border border-gray-200"
                     required
                   />
@@ -244,7 +236,7 @@ export default function Playlists() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                   <textarea
                     value={newPlaylist.description}
-                    onChange={(e) => setNewPlaylist({ ...newPlaylist, description: e.target.value })}
+                    onChange={e => setNewPlaylist({ ...newPlaylist, description: e.target.value })}
                     className="w-full bg-gray-50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#6C5CE7] border border-gray-200"
                     rows={3}
                   />
@@ -254,7 +246,7 @@ export default function Playlists() {
                     <input
                       type="checkbox"
                       checked={newPlaylist.private}
-                      onChange={(e) => setNewPlaylist({ ...newPlaylist, private: e.target.checked })}
+                      onChange={e => setNewPlaylist({ ...newPlaylist, private: e.target.checked })}
                       className="rounded text-[#6C5CE7] focus:ring-[#6C5CE7] w-5 h-5"
                     />
                     <span className="font-medium">Private Playlist</span>
@@ -265,15 +257,11 @@ export default function Playlists() {
                     type="button"
                     onClick={() => setShowCreateModal(false)}
                     className="px-6 py-3 text-gray-600 hover:text-gray-800 transition-colors font-medium"
-                  >
-                    Cancel
-                  </button>
+                  >Cancel</button>
                   <button
                     type="submit"
                     className="bg-[#6C5CE7] hover:bg-[#5A4ED1] text-white px-6 py-3 rounded-xl transition-all duration-200 font-medium"
-                  >
-                    Create
-                  </button>
+                  >Create</button>
                 </div>
               </form>
             </div>
@@ -282,4 +270,4 @@ export default function Playlists() {
       </main>
     </div>
   );
-} 
+}
