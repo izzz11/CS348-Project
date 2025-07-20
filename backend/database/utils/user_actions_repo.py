@@ -440,7 +440,7 @@ def get_user_total_listen_duration(uid: str) -> float:
         """
         
         result = run(sql, {"uid": uid}, fetchone=True)
-        
+        print("result", result)
         if result and result.get('total_duration') is not None:
             return float(result['total_duration'])
         return 0.0

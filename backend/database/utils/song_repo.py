@@ -1,7 +1,7 @@
 
 from database.db import run
 import random
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional, Union
 
 def get_all_songs():
     sql = """
@@ -16,7 +16,7 @@ def get_all_songs():
 def get_song_paginated_filtered(
     page: int = 1,
     page_size: int = 20,
-    search: str | None = None
+    search: Optional[str] = None
 ):
     offset = (page - 1) * page_size
 
