@@ -76,22 +76,30 @@ export default function Songs() {
   const [pageIndex, setPageIndex] = useState(0);
   const pageSize = 20;
 
+  // new state to track if more pages exist
+  const [hasNext, setHasNext] = useState(true);
+
   const router = useRouter();
   const { user } = useAuth();
 
-  // Fetch page whenever pageIndex or searchQuery changes
   useEffect(() => {
     const fetchSongs = async () => {
       setLoading(true);
       try {
-        const resp = await axios.get('http://localhost:8000/songs/fetch_paginated', {
+        // 1 extra record
+        const resp = await axios.get<Song[]>('http://localhost:8000/songs/fetch_paginated', {
           params: {
             page: pageIndex + 1,
-            page_size: pageSize,
+            page_size: pageSize + 1,
             search: searchQuery || undefined,
           },
         });
-        setSongs(resp.data);
+
+        // if we got more than pageSize, there is a next page
+        setHasNext(resp.data.length > pageSize);
+
+        // only keep the first pageSize items
+        setSongs(resp.data.slice(0, pageSize));
         setError(null);
       } catch {
         setError('Failed to fetch songs. Please try again later.');
@@ -102,14 +110,12 @@ export default function Songs() {
     fetchSongs();
   }, [pageIndex, searchQuery]);
 
-  // Commit the searchTerm on form submit
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setPageIndex(0);
     setSearchQuery(searchTerm.trim());
   };
 
-  // Clear both input and query
   const handleClear = () => {
     setSearchTerm('');
     setSearchQuery('');
@@ -119,7 +125,7 @@ export default function Songs() {
   const table = useReactTable({
     data: songs,
     columns,
-    pageCount: -1, // unknown total
+    pageCount: -1,
     state: {
       pagination: { pageIndex, pageSize },
     },
@@ -235,8 +241,8 @@ export default function Songs() {
               </button>
               <span className="px-4 py-2">Page {pageIndex + 1}</span>
               <button
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
+                onClick={() => setPageIndex(i => i + 1)}
+                disabled={!hasNext}
                 className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
               >
                 Next
