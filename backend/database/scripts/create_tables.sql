@@ -11,14 +11,26 @@ CREATE TABLE IF NOT EXISTS users (
     country VARCHAR(50) NULL
 );
 
+CREATE TABLE IF NOT EXISTS genres (
+    gid INT AUTO_INCREMENT PRIMARY KEY,
+    genre_name VARCHAR(50) UNIQUE NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS songs (
     sid VARCHAR(255) PRIMARY KEY,
     name VARCHAR(100),
-    genre VARCHAR(50),
     artist VARCHAR(100),
     duration FLOAT,
     audio_path VARCHAR(1024),
     audio_download_path VARCHAR(1024)
+);
+
+CREATE TABLE IF NOT EXISTS song_genres (
+    sid VARCHAR(255),
+    gid INT,
+    PRIMARY KEY (sid, gid),
+    FOREIGN KEY (sid) REFERENCES songs(sid),
+    FOREIGN KEY (gid) REFERENCES genres(gid)
 );
 
 CREATE TABLE IF NOT EXISTS playlists (

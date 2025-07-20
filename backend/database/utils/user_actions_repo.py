@@ -425,3 +425,26 @@ def toggle_favourite_with_playlist(uid: str, sid: str) -> bool:
     except Exception as e:
         print(f"Database error in toggle_favourite_with_playlist: {e}")
         return False
+
+def get_user_total_listen_duration(uid: str) -> float:
+    """
+    Calculate the total listening duration for a user by multiplying song durations by play counts
+    Returns the total duration in seconds
+    """
+    try:
+        sql = """
+        SELECT SUM(s.duration * uta.total_plays) as total_duration
+        FROM user_track_actions uta
+        JOIN songs s ON uta.sid = s.sid
+        WHERE uta.uid = :uid
+        """
+        
+        result = run(sql, {"uid": uid}, fetchone=True)
+        
+        if result and result.get('total_duration') is not None:
+            return float(result['total_duration'])
+        return 0.0
+        
+    except Exception as e:
+        print(f"Database error: {e}")
+        return 0.0

@@ -19,7 +19,7 @@ def fetch_all_songs():
         {
             "sid": row["sid"],
             "name": row["name"],
-            "genre": row["genre"],
+            "genre": row["genre"] if row["genre"] else "",
             "artist": row["artist"],
             "duration": row["duration"],
             "audio_path": row["audio_path"],
@@ -27,6 +27,28 @@ def fetch_all_songs():
         }
         for row in rows
     ]
+
+
+@router.get("/fetch_paginated", response_model=List[models.SongRead])
+def fetch_paginated_filtered(
+    page: int = Query(1),
+    page_size: int = Query(10),
+    search: str | None = Query(None)
+):
+    rows = song_repo.get_song_paginated_filtered(page, page_size, search)
+    return [
+        {
+            "sid": row["sid"],
+            "name": row["name"],
+            "genre": row["genre"] or "",
+            "artist": row["artist"],
+            "duration": row["duration"],
+            "audio_path": row["audio_path"],
+            "audio_download_path": row["audio_download_path"]
+        }
+        for row in rows
+    ]
+
 
 @router.get("/by_genre", response_model=List[models.SongRead])
 def get_by_genre(genre: str = Query(..., description="e.g. pop")):
@@ -50,3 +72,13 @@ def get_by_duration(
 @router.get("/fetch-song", response_model=models.SongRead)
 def fetch_song(sid: str):
     return song_repo.search_by_sid(sid)[0]
+
+@router.get("/recommendations/{uid}", response_model=List[models.SongRead])
+def get_recommendations(uid: str, limit: int = Query(5, description="Number of recommendations to return")):
+    """Get personalized song recommendations for a user based on their preferences and listening history"""
+    try:
+        recommendations = song_repo.get_personalized_recommendations(uid, limit)
+        return recommendations
+    except Exception as e:
+        print(f"Error getting recommendations: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get recommendations")

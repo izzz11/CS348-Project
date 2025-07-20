@@ -21,7 +21,6 @@ router = APIRouter(
 @router.get("/{uid}/favourites")
 async def get_user_favourites(uid: str):
     """Get all favourite songs for a user"""
-    print('herrrrrrrrrrrre')
     actions = get_user_track_actions(uid)
     print('actionssss', actions)
     favourites = [action for action in actions if action.favourite]

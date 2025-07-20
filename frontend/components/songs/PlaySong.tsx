@@ -465,7 +465,7 @@ const MusicInterface: React.FC<MusicInterfaceProps> = ({ songId, userId }) => {
                 <div className="flex flex-col items-start pt-4">
                   <h2 className="text-4xl font-bold text-gray-900 mb-3">{songData.name}</h2>
                   <p className="text-xl text-indigo-600 mb-2 hover:text-indigo-700 cursor-pointer">{songData.artist}</p>
-                  <p className="text-gray-500 text-lg">{songData.genre}</p>
+                  
                 </div>
               </div>
 

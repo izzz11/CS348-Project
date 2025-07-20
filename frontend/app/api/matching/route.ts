@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const uid = searchParams.get('uid');
     const page = searchParams.get('page') || '1';
-    const limit = searchParams.get('limit') || '10';
+    const limit = '5'; // Limit to 5 candidates instead of using the default 10
 
     if (!uid) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });

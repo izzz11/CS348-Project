@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, status, Query
 from typing import List, Optional
 from database.utils import user_repo, matching_repo
 from database.schema import models
+from database.db import run
 
 router = APIRouter(prefix="/matching", tags=["matching"])
 
@@ -60,6 +61,20 @@ def get_match_candidates(
         candidate_genres = set(favorite_genres)
         common_genres = len(current_genres.intersection(candidate_genres))
         
+        # Calculate common songs
+        common_songs_sql = """
+        SELECT COUNT(DISTINCT uta1.sid) as common_songs
+        FROM user_track_actions uta1
+        JOIN user_track_actions uta2 ON uta1.sid = uta2.sid
+        WHERE uta1.uid = :user1_id AND uta2.uid = :user2_id
+        """
+        common_songs_result = user_repo.run(common_songs_sql, {
+            "user1_id": current_uid,
+            "user2_id": candidate['uid']
+        }, fetchone=True)
+        
+        common_songs = common_songs_result['common_songs'] if common_songs_result else 0
+        
         candidates.append({
             "uid": candidate['uid'],
             "username": candidate['username'],
@@ -70,7 +85,7 @@ def get_match_candidates(
             "top_artists": top_artists,
             "similarity_score": similarity,
             "common_genres": common_genres,
-            "common_songs": 0  # Placeholder for now
+            "common_songs": common_songs
         })
     
     total_pages = (total_candidates + limit - 1) // limit

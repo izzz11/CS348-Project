@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/navigation';
 import {
@@ -14,7 +14,6 @@ import axios from 'axios';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../../lib/AuthContext';
 
-// Define the type for our song data
 type Song = {
   sid: number;
   name: string;
@@ -39,15 +38,15 @@ const columns = [
   columnHelper.accessor('genre', {
     header: 'Genre',
     cell: info => {
-      const genres = info.getValue().split(',').map(g => g.trim());
+      const genres = info.getValue().split(/[;,]/).map(g => g.trim());
       return (
         <div className="flex flex-wrap gap-1">
-          {genres.map((genre, index) => (
+          {genres.map((g, i) => (
             <span
-              key={index}
+              key={i}
               className="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-700 font-medium"
             >
-              {genre}
+              {g}
             </span>
           ))}
         </div>
@@ -55,117 +54,112 @@ const columns = [
     },
   }),
   columnHelper.accessor('duration', {
-    header: 'Duration (min)',
-    cell: info => (info.getValue() / 60).toFixed(2),
+    header: 'Duration',
+    cell: info => {
+      const secs = info.getValue();
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      return `${m}:${s.toString().padStart(2, '0')}`;
+    },
   }),
 ];
 
 export default function Songs() {
   const [songs, setSongs] = useState<Song[]>([]);
-  const [filteredSongs, setFilteredSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
+
+  // Controlled search input vs. committed query
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const [pageIndex, setPageIndex] = useState(0);
+  const pageSize = 20;
+
   const router = useRouter();
   const { user } = useAuth();
 
+  // Fetch page whenever pageIndex or searchQuery changes
   useEffect(() => {
     const fetchSongs = async () => {
+      setLoading(true);
       try {
-        const response = await axios.get('http://localhost:8000/songs/fetch_all');
-        setSongs(response.data);
-        setFilteredSongs(response.data);
-        setLoading(false);
-      } catch (err) {
+        const resp = await axios.get('http://localhost:8000/songs/fetch_paginated', {
+          params: {
+            page: pageIndex + 1,
+            page_size: pageSize,
+            search: searchQuery || undefined,
+          },
+        });
+        setSongs(resp.data);
+        setError(null);
+      } catch {
         setError('Failed to fetch songs. Please try again later.');
+      } finally {
         setLoading(false);
       }
     };
     fetchSongs();
-  }, []);
+  }, [pageIndex, searchQuery]);
 
-  // Filter songs when search changes
-  useEffect(() => {
-    if (!search.trim()) {
-      setFilteredSongs(songs);
-    } else {
-      const lower = search.toLowerCase();
-      setFilteredSongs(
-        songs.filter(song =>
-          song.name.toLowerCase().includes(lower) ||
-          song.artist.toLowerCase().includes(lower) ||
-          song.genre.toLowerCase().includes(lower)
-        )
-      );
-    }
-  }, [search, songs]);
-
+  // Commit the searchTerm on form submit
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Filtering is handled by useEffect
+    setPageIndex(0);
+    setSearchQuery(searchTerm.trim());
   };
 
+  // Clear both input and query
   const handleClear = () => {
-    setSearch('');
-  };
-
-  const handleClickSong = async (sid: number) => {
-    // If user is logged in, track the song action
-    if (user?.uid) {
-      console.log('Tracking song action for user:', user.uid, 'and song:', sid);
-      try {
-        await fetch(`/api/song/track-action?uid=${user.uid}&sid=${sid}&increment=false`, {
-          method: 'POST',
-        });
-      } catch (error) {
-        console.error('Error tracking song action:', error);
-      }
-    }
-    
-    // Navigate to the song page
-    router.push(`/play-song/${sid}`);
+    setSearchTerm('');
+    setSearchQuery('');
+    setPageIndex(0);
   };
 
   const table = useReactTable({
-    data: filteredSongs,
+    data: songs,
     columns,
+    pageCount: -1, // unknown total
+    state: {
+      pagination: { pageIndex, pageSize },
+    },
+    manualPagination: true,
+    onPaginationChange: updater => {
+      const next = typeof updater === 'function'
+        ? updater({ pageIndex, pageSize })
+        : updater;
+      setPageIndex(next.pageIndex);
+    },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    initialState: {
-      pagination: {
-        pageSize: 20,
-      },
-    },
   });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <Head>
-        <title>Songs - Music App</title>
-        <meta name="description" content="Browse and discover songs" />
+        <title>Songs – Music App</title>
+        <meta name="description" content="Browse and search songs" />
       </Head>
       <main className="container mx-auto px-4 py-8">
-        <div className="flex items-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800">Song Database</h1>
-          
-        </div>
-        {/* Search Bar */}
-        <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-center gap-3 mb-6">
-          <div className="relative w-full sm:w-96">
+        <h1 className="text-4xl font-bold text-gray-800 mb-6">Song Database</h1>
+
+        {/* Search Form */}
+        <form onSubmit={handleSearch} className="flex gap-3 mb-6">
+          <div className="relative flex-1">
             <input
               type="text"
-              placeholder="Search by song, artist, or genre..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full pl-10 pr-10 py-2 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition text-gray-700 bg-white shadow-sm"
+              placeholder="Search by song, artist, or genre…"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-10 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
             />
-            <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 absolute left-3 top-2.5 pointer-events-none" />
-            {search && (
+            <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
+            {searchTerm && (
               <button
                 type="button"
                 onClick={handleClear}
-                className="absolute right-3 top-2.5 text-gray-400 hover:text-red-500 focus:outline-none"
+                className="absolute right-3 top-2.5 text-gray-400 hover:text-red-500"
                 aria-label="Clear search"
               >
                 <XMarkIcon className="w-5 h-5" />
@@ -174,75 +168,83 @@ export default function Songs() {
           </div>
           <button
             type="submit"
-            className="bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-2 rounded-full transition-colors shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            className="px-5 py-2 bg-indigo-500 text-white rounded-full hover:bg-indigo-600"
           >
             Search
           </button>
         </form>
-        {/* Song Count */}
-        <div className="mb-4 text-sm text-gray-500">
-          Showing {filteredSongs.length} of {songs.length} songs
-        </div>
+
         {loading ? (
           <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500 mx-auto"></div>
-            <p className="mt-4 text-gray-500">Loading songs...</p>
+            <div className="animate-spin h-10 w-10 border-b-2 border-indigo-500 mx-auto"></div>
+            <p className="mt-4 text-gray-500">Loading…</p>
           </div>
         ) : error ? (
           <div className="text-center py-8 text-red-500">{error}</div>
-        ) : filteredSongs.length === 0 ? (
-          <div className="text-center py-16 text-gray-400 text-lg font-medium">
-            No results found.
-          </div>
+        ) : songs.length === 0 ? (
+          <div className="text-center py-16 text-gray-400">No songs found.</div>
         ) : (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                {table.getHeaderGroups().map(headerGroup => (
-                  <tr key={headerGroup.id} className="border-b border-gray-100">
-                    {headerGroup.headers.map(header => (
-                      <th
-                        key={header.id}
-                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-indigo-600 select-none"
-                        onClick={header.column.getToggleSortingHandler?.()}
-                        tabIndex={0}
-                        onKeyDown={e => {
-                          const handler = header.column.getToggleSortingHandler?.();
-                          if (e.key === 'Enter' && handler) handler(e);
-                        }}
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                        {{
-                          asc: ' ↑',
-                          desc: ' ↓',
-                        }[header.column.getIsSorted() as string] ?? null}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody>
-                {table.getRowModel().rows.map(row => (
-                  <tr
-                    key={row.id}
-                    onClick={() => router.push(`/play-song/${row.original.sid}`)}
-                    className="border-b border-gray-50 hover:bg-indigo-50 transition-colors cursor-pointer group"
-                  >
-                    {row.getVisibleCells().map(cell => (
-                      <td key={cell.id} className="px-4 py-3 text-sm text-gray-600 group-hover:text-indigo-700 transition-colors">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <div className="overflow-x-auto bg-white rounded-xl shadow-sm border">
+              <table className="w-full">
+                <thead>
+                  {table.getHeaderGroups().map(hg => (
+                    <tr key={hg.id} className="border-b">
+                      {hg.headers.map(h => (
+                        <th
+                          key={h.id}
+                          className="px-4 py-3 text-left text-sm font-medium cursor-pointer"
+                          onClick={h.column.getToggleSortingHandler?.()}
+                        >
+                          {flexRender(h.column.columnDef.header, h.getContext())}
+                          {{
+                            asc: ' ↑',
+                            desc: ' ↓',
+                          }[h.column.getIsSorted() as string] ?? null}
+                        </th>
+                      ))}
+                    </tr>
+                  ))}
+                </thead>
+                <tbody>
+                  {table.getRowModel().rows.map(r => (
+                    <tr
+                      key={r.id}
+                      onClick={() => router.push(`/play-song/${r.original.sid}`)}
+                      className="border-b hover:bg-indigo-50 cursor-pointer"
+                    >
+                      {r.getVisibleCells().map(c => (
+                        <td key={c.id} className="px-4 py-3">
+                          {flexRender(c.column.columnDef.cell, c.getContext())}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="flex justify-end gap-4 mt-4">
+              <button
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+                className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <span className="px-4 py-2">Page {pageIndex + 1}</span>
+              <button
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+                className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </>
         )}
       </main>
     </div>
   );
-} 
+}
