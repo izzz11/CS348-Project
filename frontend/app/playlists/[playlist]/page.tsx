@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import PlaylistSongs from '@/components/playlists/PlaylistSongs';
-import { ArrowLeft, Share2, Lock, LockOpen } from 'lucide-react';
+import { ArrowLeft, Share2, Lock, LockOpen, X } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
 interface Playlist {
@@ -82,7 +82,7 @@ export default function PlaylistPage({ params }: { params: { playlist: string } 
     loadAll();
   }, [params.playlist, currentUid]);
 
-  // Fetch who you’ve already shared with
+  // Fetch who you've already shared with
   async function fetchShared() {
     try {
       const res = await fetch(`/api/playlists/${params.playlist}/users`);
@@ -103,7 +103,7 @@ export default function PlaylistPage({ params }: { params: { playlist: string } 
     setShareStatus('Sharing…');
     try {
       const res = await fetch(
-        `/api/playlists/${params.playlist}/share?target_uid=${selectedUid}`,
+        `http://localhost:8000/playlists/${params.playlist}/share?target_uid=${selectedUid}`,
         { method: 'POST' }
       );
       if (!res.ok) {
@@ -116,6 +116,18 @@ export default function PlaylistPage({ params }: { params: { playlist: string } 
       setShareStatus((e as Error).message);
     }
   }
+
+  // Open share modal
+  const openShareModal = () => {
+    setShowShare(true);
+    fetchShared();
+  };
+
+  // Close share modal
+  const closeShareModal = () => {
+    setShowShare(false);
+    setShareStatus('');
+  };
 
   if (loading) {
     return (
@@ -166,57 +178,12 @@ export default function PlaylistPage({ params }: { params: { playlist: string } 
             )}
 
             {!playlist.private && (
-              <div>
-                <button
-                  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-                  onClick={() => {
-                    setShowShare(v => !v);
-                    if (!showShare) fetchShared();
-                  }}
-                >
-                  <Share2 size={18}/><span>Share</span>
-                </button>
-
-                {showShare && (
-                  <div className="mt-4 p-4 bg-white rounded shadow">
-                    <h4 className="font-medium mb-2">Share with a match:</h4>
-                    <select
-                      className="border px-2 py-1 w-full mb-2"
-                      value={selectedUid}
-                      onChange={e => setSelected(e.target.value)}
-                    >
-                      <option value="">— select user —</option>
-                      {matches.map(u => (
-                        <option key={u.uid} value={u.uid}>
-                          {u.name} ({u.username})
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      className="px-3 py-1 bg-blue-600 text-white rounded mb-2"
-                      onClick={handleShare}
-                    >
-                      Confirm Share
-                    </button>
-                    {shareStatus && (
-                      <p className="text-sm">{shareStatus}</p>
-                    )}
-
-                    <div className="mt-4">
-                      <h5 className="font-medium">Already shared with:</h5>
-                      <ul className="list-disc pl-5">
-                        {sharedWith.length
-                          ? sharedWith.map(r => (
-                              <li key={r.uid}>
-                                {r.uid} — {new Date(r.shared_at).toLocaleString()}
-                              </li>
-                            ))
-                          : <li><em>No one yet</em></li>}
-                      </ul>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <button
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+                onClick={openShareModal}
+              >
+                <Share2 size={18}/><span>Share</span>
+              </button>
             )}
           </div>
         </div>
@@ -228,6 +195,74 @@ export default function PlaylistPage({ params }: { params: { playlist: string } 
           description={playlist.description}
           songs={songs}
         />
+
+        {/* Share Modal */}
+        {showShare && (
+          <>
+            {/* Modal Backdrop */}
+            <div 
+              className="fixed inset-0 bg-indigo-100/60 backdrop-blur-sm z-40 flex items-center justify-center"
+              onClick={closeShareModal}
+            >
+              {/* Modal Content */}
+              <div 
+                className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full z-50 mx-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-semibold">Share with a match</h3>
+                  <button 
+                    onClick={closeShareModal}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <div className="mb-6">
+                  <select
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg mb-4 bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={selectedUid}
+                    onChange={e => setSelected(e.target.value)}
+                  >
+                    <option value="">— select user —</option>
+                    {matches.map(u => (
+                      <option key={u.uid} value={u.uid}>
+                        {u.name} ({u.username})
+                      </option>
+                    ))}
+                  </select>
+                  
+                  <button
+                    className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    onClick={handleShare}
+                  >
+                    Confirm Share
+                  </button>
+                  
+                  {shareStatus && (
+                    <p className="text-sm mt-3 text-center text-gray-700">
+                      {shareStatus}
+                    </p>
+                  )}
+                </div>
+
+                <div className="border-t border-gray-100 pt-4">
+                  <h4 className="font-medium mb-3 text-gray-700">Already shared with:</h4>
+                  <ul className="list-disc pl-5 max-h-40 overflow-y-auto text-gray-600">
+                    {sharedWith.length
+                      ? sharedWith.map(r => (
+                          <li key={r.uid} className="text-sm mb-1">
+                            {r.uid} — {new Date(r.shared_at).toLocaleString()}
+                          </li>
+                        ))
+                      : <li className="italic text-gray-500">No one yet</li>}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
