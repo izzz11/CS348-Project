@@ -4,7 +4,7 @@ def get_user_profile(uid: str) -> dict:
     """
     Retrieve user profile and summary stats: total plays, favourite count, playlists count
     """
-    # query user information
+    # 查询用户信息
     sql_user = """
     SELECT uid, username, email, country
     FROM users
@@ -14,7 +14,7 @@ def get_user_profile(uid: str) -> dict:
     if not user:
         return None
 
-    # query total plays
+    # 查询总播放次数
     sql_total_plays = """
     SELECT COALESCE(SUM(total_plays), 0) AS total_plays
     FROM user_track_actions
@@ -22,7 +22,7 @@ def get_user_profile(uid: str) -> dict:
     """
     total_plays = run(sql_total_plays, {"uid": uid}, fetchone=True)["total_plays"]
 
-    # query favorite count
+    # 查询收藏歌曲数量
     sql_favourite_count = """
     SELECT COUNT(sid) AS favourite_count
     FROM user_track_actions
@@ -30,7 +30,7 @@ def get_user_profile(uid: str) -> dict:
     """
     favourite_count = run(sql_favourite_count, {"uid": uid}, fetchone=True)["favourite_count"]
 
-    # Query the number of playlists
+    # 查询播放列表数量
     sql_playlists_count = """
     SELECT COUNT(pid) AS playlists_count
     FROM user_playlists
@@ -41,7 +41,7 @@ def get_user_profile(uid: str) -> dict:
     return {
         'uid': user['uid'],
         'username': user['username'],
-        'name': user['username'],  # use username as name
+        'name': user['username'],  # 使用 username 作为 name
         'email': user['email'],
         'country': user['country'],
         'total_plays': total_plays,
