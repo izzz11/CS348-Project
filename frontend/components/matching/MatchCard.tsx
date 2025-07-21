@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { FaUserFriends, FaHeart, FaSearch, FaMusic, FaStar } from 'react-icons/fa';
+import { FaHeart, FaMusic, FaStar } from 'react-icons/fa';
 
 interface MatchCandidate {
   uid: string;
@@ -18,27 +18,16 @@ interface MatchCandidate {
 interface MatchCardProps {
   candidate: MatchCandidate;
   onLike: (uid: string) => void;
-  onPass: (uid: string) => void;
   currentUserId: string;
+  showLikeButton?: boolean;
 }
 
-const MatchCard: React.FC<MatchCardProps> = ({ 
-  candidate, 
-  onLike, 
-  onPass, 
-  currentUserId 
-}) => {
+const MatchCard: React.FC<MatchCardProps> = ({ candidate, onLike, currentUserId, showLikeButton = true }) => {
   const [isLiked, setIsLiked] = useState(false);
-  const [isPassed, setIsPassed] = useState(false);
-
+  
   const handleLike = () => {
     setIsLiked(true);
     onLike(candidate.uid);
-  };
-
-  const handlePass = () => {
-    setIsPassed(true);
-    onPass(candidate.uid);
   };
 
   const getSimilarityColor = (score: number) => {
@@ -47,122 +36,42 @@ const MatchCard: React.FC<MatchCardProps> = ({
     return 'text-red-500';
   };
 
-  const getSimilarityText = (score: number) => {
-    if (score >= 0.7) return 'Excellent Match!';
-    if (score >= 0.4) return 'Good Match';
-    return 'Fair Match';
-  };
+  if (isLiked) return null;
 
-  if (isLiked || isPassed) {
-    return null;
-  }
+  // Get first letter of name or username
+  const firstLetter = (candidate.name?.trim() || candidate.username.trim())[0]?.toUpperCase() || '?';
 
   return (
-    <div className="w-full max-w-md bg-white/70 backdrop-blur-sm rounded-3xl shadow-lg p-8 flex flex-col items-center border border-gray-100 transform transition-all duration-300 hover:scale-105">
-      {/* User Info */}
-      <div className="flex items-center space-x-4 mb-6">
-        <div className="w-16 h-16 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center">
-          <FaUserFriends className="text-2xl text-white" />
-        </div>
-        <div className="text-center">
-          <h3 className="text-2xl font-bold text-gray-800">
-            {candidate.name || candidate.username}
-          </h3>
-          {candidate.age && (
-            <p className="text-gray-600">{candidate.age} years old</p>
-          )}
-          {candidate.country && (
-            <p className="text-gray-500 text-sm">{candidate.country}</p>
-          )}
-        </div>
+    <div className="bg-white/80 rounded-xl shadow p-4 flex flex-col items-center border border-gray-100 hover:shadow-lg transition-all min-w-[220px] max-w-[280px] mx-auto">
+      <div className="w-12 h-12 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center mb-2">
+        <span className="text-xl font-bold text-white select-none">{firstLetter}</span>
       </div>
-
-      {/* Similarity Score */}
-      <div className="mb-6 text-center">
-        <div className="flex items-center justify-center space-x-2 mb-2">
-          <FaStar className={`text-xl ${getSimilarityColor(candidate.similarity_score)}`} />
-          <span className={`text-lg font-semibold ${getSimilarityColor(candidate.similarity_score)}`}>
-            {Math.round(candidate.similarity_score * 100)}%
-          </span>
-        </div>
-        <p className="text-sm text-gray-600">{getSimilarityText(candidate.similarity_score)}</p>
+      <h3 className="text-base font-semibold text-gray-800 text-center line-clamp-1 mb-1">
+        {candidate.name || candidate.username}
+      </h3>
+      <div className="flex items-center justify-center space-x-1 mb-2">
+        <FaStar className={`text-xs ${getSimilarityColor(candidate.similarity_score)}`} />
+        <span className={`text-xs font-semibold ${getSimilarityColor(candidate.similarity_score)}`}>{Math.round(candidate.similarity_score * 100)}%</span>
       </div>
-
-      {/* Music Taste */}
-      <div className="w-full mb-6">
-        <div className="mb-4">
-          <h4 className="text-lg font-semibold text-gray-800 mb-2 flex items-center">
-            <FaMusic className="mr-2 text-indigo-500" />
-            Favorite Genres
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            {candidate.favorite_genres.slice(0, 3).map((genre, index) => (
-              <span
-                key={index}
-                className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium"
-              >
-                {genre}
-              </span>
-            ))}
-            {candidate.favorite_genres.length > 3 && (
-              <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
-                +{candidate.favorite_genres.length - 3} more
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div>
-          <h4 className="text-lg font-semibold text-gray-800 mb-2">Top Artists</h4>
-          <div className="flex flex-wrap gap-2">
-            {candidate.top_artists.slice(0, 3).map((artist, index) => (
-              <span
-                key={index}
-                className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium"
-              >
-                {artist}
-              </span>
-            ))}
-            {candidate.top_artists.length > 3 && (
-              <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
-                +{candidate.top_artists.length - 3} more
-              </span>
-            )}
-          </div>
-        </div>
+      <div className="flex flex-wrap gap-1 justify-center mb-2">
+        {candidate.favorite_genres && candidate.favorite_genres.slice(0, 2).map((genre, i) => (
+          <span key={i} className="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-xs font-medium line-clamp-1">{genre}</span>
+        ))}
       </div>
-
-      {/* Common Elements */}
-      <div className="w-full mb-6">
-        <div className="grid grid-cols-2 gap-4 text-center">
-          <div className="bg-green-50 rounded-lg p-3">
-            <p className="text-2xl font-bold text-green-600">{candidate.common_genres}</p>
-            <p className="text-sm text-green-700">Common Genres</p>
-          </div>
-          <div className="bg-blue-50 rounded-lg p-3">
-            <p className="text-2xl font-bold text-blue-600">{candidate.common_songs}</p>
-            <p className="text-sm text-blue-700">Common Songs</p>
-          </div>
-        </div>
+      <div className="flex flex-wrap gap-1 justify-center mb-2">
+        {candidate.favorite_genres && candidate.top_artists.slice(0, 2).map((artist, i) => (
+          <span key={i} className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-medium line-clamp-1">{artist}</span>
+        ))}
       </div>
-
-      {/* Action Buttons */}
-      <div className="flex space-x-8">
-        <button
-          onClick={handlePass}
-          className="bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-full p-4 text-2xl transition-colors duration-200 transform hover:scale-110"
-          title="Pass"
-        >
-          <FaSearch />
-        </button>
+      {showLikeButton && (
         <button
           onClick={handleLike}
-          className="bg-pink-500 hover:bg-pink-600 text-white rounded-full p-4 text-2xl transition-colors duration-200 transform hover:scale-110"
+          className="mt-2 w-full flex items-center justify-center gap-1 px-3 py-1.5 bg-pink-500 hover:bg-pink-600 text-white rounded-lg text-sm font-medium transition-colors"
           title="Like"
         >
-          <FaHeart />
+          <FaHeart className="text-base" /> Like
         </button>
-      </div>
+      )}
     </div>
   );
 };

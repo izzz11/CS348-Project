@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { FaMusic, FaUsers, FaPlay, FaHeart, FaStar } from 'react-icons/fa';
+import { FaMusic, FaUsers, FaPlay, FaHeart, FaStar, FaUserFriends } from 'react-icons/fa';
 
 interface Recommendation {
   uid?: string;
@@ -18,7 +18,7 @@ interface Recommendation {
 
 interface RecommendationsProps {
   userId: string;
-  type: 'users' | 'songs' | 'playlists';
+  type: 'users' | 'songs' | 'playlists' | 'matched';
 }
 
 const Recommendations: React.FC<RecommendationsProps> = ({ userId, type }) => {
@@ -33,14 +33,32 @@ const Recommendations: React.FC<RecommendationsProps> = ({ userId, type }) => {
   const fetchRecommendations = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/matching/recommendations/${userId}?type=${type}&limit=10`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch recommendations');
+      let response, data;
+      if (type === 'matched') {
+        response = await fetch(`/api/matching/matches/${userId}`, {
+          cache: 'no-cache',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        });
+        if (!response.ok) throw new Error('Failed to fetch matched users');
+        data = await response.json();
+        setRecommendations(data);
+      } else {
+        response = await fetch(`/api/matching/recommendations/${userId}?type=${type}&limit=10`, {
+          cache: 'no-cache',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        });
+        if (!response.ok) throw new Error('Failed to fetch recommendations');
+        data = await response.json();
+        setRecommendations(data);
       }
-      
-      const data = await response.json();
-      setRecommendations(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -56,6 +74,8 @@ const Recommendations: React.FC<RecommendationsProps> = ({ userId, type }) => {
         return <FaMusic className="text-2xl text-green-500" />;
       case 'playlists':
         return <FaPlay className="text-2xl text-purple-500" />;
+      case 'matched':
+        return <FaUserFriends className="text-2xl text-pink-500" />;
       default:
         return <FaStar className="text-2xl text-yellow-500" />;
     }
@@ -69,6 +89,8 @@ const Recommendations: React.FC<RecommendationsProps> = ({ userId, type }) => {
         return 'Song Recommendations';
       case 'playlists':
         return 'Playlist Recommendations';
+      case 'matched':
+        return 'Matched Users';
       default:
         return 'Recommendations';
     }
@@ -117,10 +139,14 @@ const Recommendations: React.FC<RecommendationsProps> = ({ userId, type }) => {
 
       {recommendations.length === 0 ? (
         <div className="text-center p-8 bg-gray-50 rounded-lg">
-          <p className="text-gray-600">No recommendations available yet.</p>
-          <p className="text-sm text-gray-500 mt-2">
-            Start listening to music and favoriting songs to get personalized recommendations!
+          <p className="text-gray-600">
+            {type === 'matched' ? 'No matched users yet.' : 'No recommendations available yet.'}
           </p>
+          {type !== 'matched' && (
+            <p className="text-sm text-gray-500 mt-2">
+              Start listening to music and favoriting songs to get personalized recommendations!
+            </p>
+          )}
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -132,7 +158,7 @@ const Recommendations: React.FC<RecommendationsProps> = ({ userId, type }) => {
               {/* Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  {type === 'users' && (
+                  {(type === 'users' || type === 'matched') && (
                     <h3 className="text-lg font-semibold text-gray-800">
                       {rec.name || rec.username}
                     </h3>
@@ -147,12 +173,14 @@ const Recommendations: React.FC<RecommendationsProps> = ({ userId, type }) => {
                     <h3 className="text-lg font-semibold text-gray-800">{rec.name}</h3>
                   )}
                 </div>
-                <div className="flex items-center space-x-1">
-                  <FaStar className={`text-sm ${getConfidenceColor(rec.confidence_score)}`} />
-                  <span className={`text-sm font-medium ${getConfidenceColor(rec.confidence_score)}`}>
-                    {Math.round(rec.confidence_score * 100)}%
-                  </span>
-                </div>
+                {type !== 'matched' && (
+                  <div className="flex items-center space-x-1">
+                    <FaStar className={`text-sm ${getConfidenceColor(rec.confidence_score)}`} />
+                    <span className={`text-sm font-medium ${getConfidenceColor(rec.confidence_score)}`}>
+                      {Math.round(rec.confidence_score * 100)}%
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Content */}
@@ -176,19 +204,30 @@ const Recommendations: React.FC<RecommendationsProps> = ({ userId, type }) => {
                   </p>
                 )}
 
-                <div className="text-xs text-gray-500">
-                  <p className="font-medium">Why recommended:</p>
-                  <p>{rec.recommendation_reason}</p>
-                </div>
+                {type !== 'matched' && (
+                  <div className="text-xs text-gray-500">
+                    <p className="font-medium">Why recommended:</p>
+                    <p>{rec.recommendation_reason}</p>
+                  </div>
+                )}
               </div>
 
               {/* Action Button */}
               <div className="mt-4">
-                <button className="w-full px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors text-sm">
-                  {type === 'users' && 'View Profile'}
-                  {type === 'songs' && 'Play Song'}
-                  {type === 'playlists' && 'View Playlist'}
-                </button>
+                {type === 'matched' ? (
+                  <a
+                    href={`/playlists`}
+                    className="w-full block px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors text-sm text-center"
+                  >
+                    Start Listening With Them
+                  </a>
+                ) : (
+                  <button className="w-full px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors text-sm">
+                    {type === 'users' && 'View Profile'}
+                    {type === 'songs' && 'Play Song'}
+                    {type === 'playlists' && 'View Playlist'}
+                  </button>
+                )}
               </div>
             </div>
           ))}

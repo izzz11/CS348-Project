@@ -8,25 +8,16 @@ export async function GET(
 ) {
   try {
     const { uid } = params;
-    const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type') || 'users'; // users, songs, playlists, matched
-    const limit = searchParams.get('limit') || '10';
-
     if (!uid) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
     }
-
-    let url;
-    if (type === 'matched') {
-      url = `${API_BASE_URL}/matching/matches/${uid}`;
-    } else {
-      url = `${API_BASE_URL}/matching/recommendations/${type}/${uid}?limit=${limit}`;
-    }
-    const response = await fetch(url, {
+    const response = await fetch(`${API_BASE_URL}/matching/matches/${uid}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
       },
+      cache: 'no-store',
     });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -34,9 +25,9 @@ export async function GET(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error fetching recommendations:', error);
+    console.error('Error fetching matched users:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch recommendations' },
+      { error: 'Failed to fetch matched users' },
       { status: 500 }
     );
   }

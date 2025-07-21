@@ -19,7 +19,9 @@ export async function GET(request: NextRequest) {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache'
         },
+        cache: 'no-store',
       }
     );
 
@@ -41,7 +43,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { user1_id, user2_id, liked_by_user1, liked_by_user2 } = body;
+    const { user1_id, user2_id, liked_by_user1 } = body;
 
     if (!user1_id || !user2_id) {
       return NextResponse.json(
@@ -59,7 +61,6 @@ export async function POST(request: NextRequest) {
         user1_id,
         user2_id,
         liked_by_user1: liked_by_user1 || false,
-        liked_by_user2: liked_by_user2 || false,
       }),
     });
 

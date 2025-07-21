@@ -138,7 +138,7 @@ class UserMatchCreate(BaseModel):
     user1_id: str
     user2_id: str
     liked_by_user1: bool = False
-    liked_by_user2: bool = False
+    liked_by_user2: Optional[bool] = None
 
 class UserMatchUpdate(BaseModel):
     liked_by_user1: Optional[bool] = None

@@ -1,14 +1,15 @@
-from typing import List, Optional
-from datetime import datetime
-from database.schema.models import UserMatchCreate, UserMatchUpdate, UserRecommendation, SongRecommendation, PlaylistRecommendation
-from database.db import run, run_transaction
+from typing import List
+from database.schema.models import UserMatchCreate
+from database.db import run
 from database.utils import user_repo
+import math
 
 def create_user_match(match: UserMatchCreate) -> bool:
     """
-    Create a new user match or update existing one
+    Create or update a user match (like action). If both users like each other, mark as matched.
     """
     try:
+        print(f"Creating/updating match: {match}")
         # Check if match already exists
         check_sql = """
         SELECT * FROM user_matches 
@@ -20,27 +21,30 @@ def create_user_match(match: UserMatchCreate) -> bool:
             "user2_id": match.user2_id
         }, fetchone=True)
         
+        print(f"Existing match found: {existing}")
+        
         if existing:
-            # Update existing match
+            # Update only the current user's like status
+            # Determine which user is the current user and update their like status
             update_sql = """
             UPDATE user_matches 
             SET liked_by_user1 = CASE 
-                WHEN user1_id = :user1_id THEN :liked_by_user1
+                WHEN user1_id = :current_user_id THEN TRUE
                 ELSE liked_by_user1
             END,
             liked_by_user2 = CASE 
-                WHEN user2_id = :user2_id THEN :liked_by_user2
+                WHEN user2_id = :current_user_id THEN TRUE
                 ELSE liked_by_user2
             END,
             matched = CASE 
-                WHEN (user1_id = :user1_id AND :liked_by_user1 = TRUE AND liked_by_user2 = TRUE)
-                OR (user2_id = :user2_id AND :liked_by_user2 = TRUE AND liked_by_user1 = TRUE)
+                WHEN (user1_id = :current_user_id AND liked_by_user2 = TRUE)
+                OR (user2_id = :current_user_id AND liked_by_user1 = TRUE)
                 THEN TRUE
                 ELSE matched
             END,
             matched_at = CASE 
-                WHEN (user1_id = :user1_id AND :liked_by_user1 = TRUE AND liked_by_user2 = TRUE)
-                OR (user2_id = :user2_id AND :liked_by_user2 = TRUE AND liked_by_user1 = TRUE)
+                WHEN (user1_id = :current_user_id AND liked_by_user2 = TRUE)
+                OR (user2_id = :current_user_id AND liked_by_user1 = TRUE)
                 THEN CURRENT_TIMESTAMP
                 ELSE matched_at
             END
@@ -50,24 +54,22 @@ def create_user_match(match: UserMatchCreate) -> bool:
             run(update_sql, {
                 "user1_id": match.user1_id,
                 "user2_id": match.user2_id,
-                "liked_by_user1": match.liked_by_user1,
-                "liked_by_user2": match.liked_by_user2
+                "current_user_id": match.user1_id  # The current user is always user1_id in the request
             })
+            print("Updated existing match")
         else:
-            # Create new match
+            # Create new match row with only the current user's like status as true
             similarity = user_repo.calculate_user_similarity(match.user1_id, match.user2_id)
             insert_sql = """
             INSERT INTO user_matches (user1_id, user2_id, similarity_score, liked_by_user1, liked_by_user2)
-            VALUES (:user1_id, :user2_id, :similarity_score, :liked_by_user1, :liked_by_user2)
+            VALUES (:user1_id, :user2_id, :similarity_score, TRUE, FALSE)
             """
             run(insert_sql, {
                 "user1_id": match.user1_id,
                 "user2_id": match.user2_id,
-                "similarity_score": similarity,
-                "liked_by_user1": match.liked_by_user1,
-                "liked_by_user2": match.liked_by_user2
+                "similarity_score": similarity
             })
-        
+            print("Created new match")
         return True
     except Exception as e:
         print(f"Database error: {e}")
@@ -75,164 +77,143 @@ def create_user_match(match: UserMatchCreate) -> bool:
 
 def get_user_matches(uid: str) -> List[dict]:
     """
-    Get all matches for a user
+    Get all users that the current user has matched with (mutual like).
     """
     try:
         sql = """
-        SELECT um.*, u.username, u.name, u.age, u.country
+        SELECT u.uid, u.username, u.name, u.age, u.country
         FROM user_matches um
-        JOIN users u ON (um.user1_id = u.uid OR um.user2_id = u.uid)
+        JOIN users u ON (u.uid = CASE WHEN um.user1_id = :uid THEN um.user2_id ELSE um.user1_id END)
         WHERE (um.user1_id = :uid OR um.user2_id = :uid)
-        AND um.matched = TRUE
-        AND u.uid != :uid
+        AND (um.liked_by_user1 = TRUE AND um.liked_by_user2 = TRUE)
         """
-        result = run(sql, {"uid": uid}, fetch=True)
-        return result
+        users = run(sql, {"uid": uid}, fetch=True)
+        
+        # Add the additional data that frontend expects
+        for user in users:
+            # Get favorite genres and artists
+            user["favorite_genres"] = user_repo.get_user_favorite_genres(user["uid"])
+            user["top_artists"] = user_repo.get_user_top_artists(user["uid"])
+            
+            # Calculate similarity score
+            sim = user_repo.calculate_user_similarity(uid, user["uid"])
+            if sim is None or not isinstance(sim, (int, float)) or sim != sim:  # NaN check
+                sim = 0.0
+            user["similarity_score"] = float(sim) + 0.40
+            
+            # Calculate common elements
+            current_genres = set(user_repo.get_user_favorite_genres(uid))
+            candidate_genres = set(user["favorite_genres"])
+            user["common_genres"] = len(current_genres.intersection(candidate_genres))
+            
+            # Calculate common songs
+            common_songs_sql = """
+            SELECT COUNT(DISTINCT uta1.sid) as common_songs
+            FROM user_track_actions uta1
+            JOIN user_track_actions uta2 ON uta1.sid = uta2.sid
+            WHERE uta1.uid = :user1_id AND uta2.uid = :user2_id
+            """
+            common_songs_result = user_repo.run(common_songs_sql, {
+                "user1_id": uid,
+                "user2_id": user["uid"]
+            }, fetchone=True)
+            user["common_songs"] = common_songs_result['common_songs'] if common_songs_result else 0
+        
+        return users
     except Exception as e:
         print(f"Database error: {e}")
         return []
 
 def get_user_likes(uid: str) -> List[dict]:
     """
-    Get all users that the current user has liked
+    Get all users that the current user has liked (but not necessarily matched).
     """
     try:
         sql = """
-        SELECT um.*, u.username, u.name, u.age, u.country
+        SELECT u.uid, u.username, u.name, u.age, u.country, um.matched
         FROM user_matches um
-        JOIN users u ON (um.user1_id = u.uid OR um.user2_id = u.uid)
+        JOIN users u ON (u.uid = CASE WHEN um.user1_id = :uid THEN um.user2_id ELSE um.user1_id END)
         WHERE ((um.user1_id = :uid AND um.liked_by_user1 = TRUE)
-        OR (um.user2_id = :uid AND um.liked_by_user2 = TRUE))
+           OR (um.user2_id = :uid AND um.liked_by_user2 = TRUE))
         AND u.uid != :uid
         """
-        result = run(sql, {"uid": uid}, fetch=True)
-        return result
+        users = run(sql, {"uid": uid}, fetch=True)
+
+        
+        # Add the additional data that frontend expects
+        for user in users:
+            # Get favorite genres and artists
+            user["favorite_genres"] = user_repo.get_user_favorite_genres(user["uid"])
+            user["top_artists"] = user_repo.get_user_top_artists(user["uid"])
+            
+            # Calculate similarity score
+            sim = user_repo.calculate_user_similarity(uid, user["uid"])
+            if sim is None or not isinstance(sim, (int, float)) or sim != sim:  # NaN check
+                sim = 0.0
+            user["similarity_score"] = float(sim) + 0.30
+            
+            # Calculate common elements
+            current_genres = set(user_repo.get_user_favorite_genres(uid))
+            candidate_genres = set(user["favorite_genres"])
+            user["common_genres"] = len(current_genres.intersection(candidate_genres))
+            
+            # Calculate common songs
+            common_songs_sql = """
+            SELECT COUNT(DISTINCT uta1.sid) as common_songs
+            FROM user_track_actions uta1
+            JOIN user_track_actions uta2 ON uta1.sid = uta2.sid
+            WHERE uta1.uid = :user1_id AND uta2.uid = :user2_id
+            """
+            common_songs_result = user_repo.run(common_songs_sql, {
+                "user1_id": uid,
+                "user2_id": user["uid"]
+            }, fetchone=True)
+            user["common_songs"] = common_songs_result['common_songs'] if common_songs_result else 0
+        
+        return users
     except Exception as e:
         print(f"Database error: {e}")
         return []
-
-def create_user_recommendation(recommendation: UserRecommendation) -> bool:
-    """
-    Create a new user recommendation
-    """
-    try:
-        sql = """
-        INSERT INTO user_recommendations (uid, recommended_uid, recommendation_type, confidence_score)
-        VALUES (:uid, :recommended_uid, :recommendation_type, :confidence_score)
-        ON DUPLICATE KEY UPDATE
-        confidence_score = :confidence_score,
-        created_at = CURRENT_TIMESTAMP
-        """
-        run(sql, {
-            "uid": recommendation.uid,
-            "recommended_uid": recommendation.recommended_uid,
-            "recommendation_type": recommendation.recommendation_type,
-            "confidence_score": recommendation.confidence_score
-        })
-        return True
-    except Exception as e:
-        print(f"Database error: {e}")
-        return False
 
 def get_user_recommendations(uid: str, limit: int = 10) -> List[dict]:
     """
-    Get recommendations for a user
+    Recommend users for matching:
+    - Users with no user_matches entry with the current user
+    - OR users where the other user has liked the current user, but the current user has not liked them back yet
+    Exclude users already matched or already liked by the current user.
     """
     try:
         sql = """
-        SELECT ur.*, u.username, u.name, u.age, u.country
-        FROM user_recommendations ur
-        JOIN users u ON ur.recommended_uid = u.uid
-        WHERE ur.uid = :uid
-        ORDER BY ur.confidence_score DESC
+        SELECT u.uid, u.username, u.name, u.age, u.country
+        FROM users u
+        WHERE u.uid != :uid
+        AND (
+            -- No user_matches entry exists
+            NOT EXISTS (
+                SELECT 1 FROM user_matches um
+                WHERE (um.user1_id = :uid AND um.user2_id = u.uid)
+                   OR (um.user1_id = u.uid AND um.user2_id = :uid)
+            )
+            OR
+            -- There is a user_matches entry, the other user liked current user, but current user hasn't liked them
+            EXISTS (
+                SELECT 1 FROM user_matches um
+                WHERE ((um.user1_id = u.uid AND um.user2_id = :uid AND um.liked_by_user1 = TRUE AND um.liked_by_user2 = FALSE)
+                    OR (um.user2_id = u.uid AND um.user1_id = :uid AND um.liked_by_user2 = TRUE AND um.liked_by_user1 = FALSE))
+            )
+        )
         LIMIT :limit
         """
-        result = run(sql, {"uid": uid, "limit": limit}, fetch=True)
-        return result
-    except Exception as e:
-        print(f"Database error: {e}")
-        return []
-
-def create_song_recommendation(recommendation: SongRecommendation) -> bool:
-    """
-    Create a new song recommendation
-    """
-    try:
-        sql = """
-        INSERT INTO song_recommendations (uid, sid, recommendation_reason, confidence_score)
-        VALUES (:uid, :sid, :recommendation_reason, :confidence_score)
-        ON DUPLICATE KEY UPDATE
-        confidence_score = :confidence_score,
-        created_at = CURRENT_TIMESTAMP
-        """
-        run(sql, {
-            "uid": recommendation.uid,
-            "sid": recommendation.sid,
-            "recommendation_reason": recommendation.recommendation_reason,
-            "confidence_score": recommendation.confidence_score
-        })
-        return True
-    except Exception as e:
-        print(f"Database error: {e}")
-        return False
-
-def get_song_recommendations(uid: str, limit: int = 10) -> List[dict]:
-    """
-    Get song recommendations for a user
-    """
-    try:
-        sql = """
-        SELECT sr.*, s.name, s.artist, s.genre, s.duration
-        FROM song_recommendations sr
-        JOIN songs s ON sr.sid = s.sid
-        WHERE sr.uid = :uid
-        ORDER BY sr.confidence_score DESC
-        LIMIT :limit
-        """
-        result = run(sql, {"uid": uid, "limit": limit}, fetch=True)
-        return result
-    except Exception as e:
-        print(f"Database error: {e}")
-        return []
-
-def create_playlist_recommendation(recommendation: PlaylistRecommendation) -> bool:
-    """
-    Create a new playlist recommendation
-    """
-    try:
-        sql = """
-        INSERT INTO playlist_recommendations (uid, pid, recommendation_reason, confidence_score)
-        VALUES (:uid, :pid, :recommendation_reason, :confidence_score)
-        ON DUPLICATE KEY UPDATE
-        confidence_score = :confidence_score,
-        created_at = CURRENT_TIMESTAMP
-        """
-        run(sql, {
-            "uid": recommendation.uid,
-            "pid": recommendation.pid,
-            "recommendation_reason": recommendation.recommendation_reason,
-            "confidence_score": recommendation.confidence_score
-        })
-        return True
-    except Exception as e:
-        print(f"Database error: {e}")
-        return False
-
-def get_playlist_recommendations(uid: str, limit: int = 10) -> List[dict]:
-    """
-    Get playlist recommendations for a user
-    """
-    try:
-        sql = """
-        SELECT pr.*, p.name, p.description, p.private
-        FROM playlist_recommendations pr
-        JOIN playlists p ON pr.pid = p.pid
-        WHERE pr.uid = :uid
-        ORDER BY pr.confidence_score DESC
-        LIMIT :limit
-        """
-        result = run(sql, {"uid": uid, "limit": limit}, fetch=True)
-        return result
+        users = run(sql, {"uid": uid, "limit": limit}, fetch=True)
+        # Attach similarity score, always fallback to 0.0 if invalid
+        for user in users:
+            sim = user_repo.calculate_user_similarity(uid, user["uid"])
+            if sim is None or not isinstance(sim, (int, float)) or sim != sim:  # NaN check
+                sim = 0.0
+            user["similarity_score"] = float(sim) + 0.20
+        # Sort by similarity descending
+        users.sort(key=lambda x: x["similarity_score"], reverse=True)
+        return users[:limit]
     except Exception as e:
         print(f"Database error: {e}")
         return [] 
