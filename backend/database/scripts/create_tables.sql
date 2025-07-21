@@ -86,42 +86,6 @@ CREATE TABLE IF NOT EXISTS user_matches (
     FOREIGN KEY (user2_id) REFERENCES users(uid)
 );
 
--- User recommendations based on music taste
-CREATE TABLE IF NOT EXISTS user_recommendations (
-    uid VARCHAR(36),
-    recommended_uid VARCHAR(36),
-    recommendation_type ENUM('song_based', 'genre_based', 'artist_based', 'playlist_based'),
-    confidence_score FLOAT DEFAULT 0.0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (uid, recommended_uid, recommendation_type),
-    FOREIGN KEY (uid) REFERENCES users(uid),
-    FOREIGN KEY (recommended_uid) REFERENCES users(uid)
-);
-
--- Song recommendations for users
-CREATE TABLE IF NOT EXISTS song_recommendations (
-    uid VARCHAR(36),
-    sid VARCHAR(255),
-    recommendation_reason VARCHAR(255),
-    confidence_score FLOAT DEFAULT 0.0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (uid, sid),
-    FOREIGN KEY (uid) REFERENCES users(uid),
-    FOREIGN KEY (sid) REFERENCES songs(sid)
-);
-
--- Playlist recommendations for users
-CREATE TABLE IF NOT EXISTS playlist_recommendations (
-    uid VARCHAR(36),
-    pid VARCHAR(36),
-    recommendation_reason VARCHAR(255),
-    confidence_score FLOAT DEFAULT 0.0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (uid, pid),
-    FOREIGN KEY (uid) REFERENCES users(uid),
-    FOREIGN KEY (pid) REFERENCES playlists(pid)
-);
-
 
 
 

@@ -1,25 +1,20 @@
+# Completely rewrite logic
+
 # routers/matching.py
 from fastapi import APIRouter, HTTPException, status, Query
-from typing import List, Optional
+from typing import List
 from database.utils import user_repo, matching_repo
 from database.schema import models
-from database.db import run
 
 router = APIRouter(prefix="/matching", tags=["matching"])
 
 @router.get("/profile/{uid}", response_model=models.UserProfile)
 def get_user_profile(uid: str):
-    """
-    Get extended user profile with music taste information
-    """
     profile = user_repo.get_user_profile(uid)
     if not profile:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
-    
-    # Get favorite genres and artists
     favorite_genres = user_repo.get_user_favorite_genres(uid)
     top_artists = user_repo.get_user_top_artists(uid)
-    
     return {
         "uid": profile['uid'],
         "username": profile['username'],
@@ -35,32 +30,17 @@ def get_user_profile(uid: str):
 @router.get("/candidates", response_model=models.MatchResponse)
 def get_match_candidates(
     current_uid: str = Query(..., description="Current user ID"),
-    page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(10, ge=1, le=50, description="Number of candidates per page")
 ):
-    """
-    Get potential match candidates for a user
-    """
-    offset = (page - 1) * limit
-    
-    # Get candidates
-    candidates_data = user_repo.get_users_for_matching(current_uid, limit, offset)
-    total_candidates = user_repo.get_total_users_for_matching(current_uid)
-    
+    candidates_data = matching_repo.get_user_recommendations(current_uid, limit)
     candidates = []
     for candidate in candidates_data:
-        # Calculate similarity
-        similarity = user_repo.calculate_user_similarity(current_uid, candidate['uid'])
-        
-        # Get candidate's favorite genres and artists
+        similarity = candidate.get("similarity_score", 0.0)
         favorite_genres = user_repo.get_user_favorite_genres(candidate['uid'])
         top_artists = user_repo.get_user_top_artists(candidate['uid'])
-        
-        # Calculate common elements
         current_genres = set(user_repo.get_user_favorite_genres(current_uid))
         candidate_genres = set(favorite_genres)
         common_genres = len(current_genres.intersection(candidate_genres))
-        
         # Calculate common songs
         common_songs_sql = """
         SELECT COUNT(DISTINCT uta1.sid) as common_songs
@@ -72,9 +52,7 @@ def get_match_candidates(
             "user1_id": current_uid,
             "user2_id": candidate['uid']
         }, fetchone=True)
-        
         common_songs = common_songs_result['common_songs'] if common_songs_result else 0
-        
         candidates.append({
             "uid": candidate['uid'],
             "username": candidate['username'],
@@ -87,113 +65,34 @@ def get_match_candidates(
             "common_genres": common_genres,
             "common_songs": common_songs
         })
-    
-    total_pages = (total_candidates + limit - 1) // limit
-    
     return {
         "candidates": candidates,
-        "total_candidates": total_candidates,
-        "current_page": page,
-        "total_pages": total_pages
+        "total_candidates": len(candidates),
+        "current_page": 1,
+        "total_pages": 1
     }
 
 @router.post("/like", response_model=dict)
 def like_user(match: models.UserMatchCreate):
-    """
-    Like a user (create or update match)
-    """
+    print(f"Like request received: {match}")
     success = matching_repo.create_user_match(match)
     if not success:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to create match")
-    
     return {"message": "Like recorded successfully"}
 
 @router.get("/matches/{uid}", response_model=List[dict])
 def get_user_matches(uid: str):
-    """
-    Get all successful matches for a user
-    """
     matches = matching_repo.get_user_matches(uid)
     return matches
 
 @router.get("/likes/{uid}", response_model=List[dict])
 def get_user_likes(uid: str):
-    """
-    Get all users that the current user has liked
-    """
+    print(f"Getting likes for user: {uid}")
     likes = matching_repo.get_user_likes(uid)
+    print(f"Returning likes: {likes}")
     return likes
 
 @router.get("/recommendations/users/{uid}", response_model=List[dict])
-def get_user_recommendations(
-    uid: str,
-    limit: int = Query(10, ge=1, le=50, description="Number of recommendations")
-):
-    """
-    Get user recommendations based on music taste
-    """
+def get_user_recommendations(uid: str, limit: int = Query(10, ge=1, le=50)):
     recommendations = matching_repo.get_user_recommendations(uid, limit)
-    return recommendations
-
-@router.get("/recommendations/songs/{uid}", response_model=List[dict])
-def get_song_recommendations(
-    uid: str,
-    limit: int = Query(10, ge=1, le=50, description="Number of recommendations")
-):
-    """
-    Get song recommendations for a user
-    """
-    recommendations = matching_repo.get_song_recommendations(uid, limit)
-    return recommendations
-
-@router.get("/recommendations/playlists/{uid}", response_model=List[dict])
-def get_playlist_recommendations(
-    uid: str,
-    limit: int = Query(10, ge=1, le=50, description="Number of recommendations")
-):
-    """
-    Get playlist recommendations for a user
-    """
-    recommendations = matching_repo.get_playlist_recommendations(uid, limit)
-    return recommendations
-
-@router.post("/recommendations/generate/{uid}")
-def generate_recommendations(uid: str):
-    """
-    Generate recommendations for a user based on their music taste
-    This is a placeholder for a more sophisticated recommendation algorithm
-    """
-    try:
-        # Get user's favorite genres and artists
-        favorite_genres = user_repo.get_user_favorite_genres(uid)
-        top_artists = user_repo.get_user_top_artists(uid)
-        
-        # Get other users with similar taste
-        all_users = user_repo.get_all_users()
-        recommendations_created = 0
-        
-        for user in all_users:
-            if user['uid'] == uid:
-                continue
-                
-            # Calculate similarity
-            similarity = user_repo.calculate_user_similarity(uid, user['uid'])
-            
-            if similarity > 0.3:  # Threshold for recommendation
-                # Create user recommendation
-                recommendation = models.UserRecommendation(
-                    uid=uid,
-                    recommended_uid=user['uid'],
-                    recommendation_type=models.RecommendationType.GENRE_BASED,
-                    confidence_score=similarity
-                )
-                matching_repo.create_user_recommendation(recommendation)
-                recommendations_created += 1
-        
-        return {
-            "message": f"Generated {recommendations_created} recommendations",
-            "recommendations_created": recommendations_created
-        }
-        
-    except Exception as e:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, f"Failed to generate recommendations: {str(e)}") 
+    return recommendations 

@@ -10,6 +10,7 @@ SQLALCHEMY_DATABASE_URL = (
 )
 
 SCHEMA_PATH = Path(__file__).resolve().parent / "scripts/create_tables.sql"
+DUMMY_DATA_PATH = Path(__file__).resolve().parent / "scripts/insert-dummy-data.sql"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=False)
 
@@ -74,6 +75,8 @@ def run_script(file_path: str):
         for statement in sql.split(";"):
             if statement.strip():
                 conn.execute(text(statement.strip()))
+    
+    print("📄 Script ran: ", file_path)
 
 def create_views_and_indexes():
     ddl = """
@@ -93,6 +96,7 @@ def create_views_and_indexes():
 
 # Run schema on startup
 run_script(SCHEMA_PATH)
+run_script(DUMMY_DATA_PATH)
 create_views_and_indexes()
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
