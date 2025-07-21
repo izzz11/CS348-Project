@@ -47,41 +47,50 @@ def populate_songs_if_empty():
                 
                 # Process genres for this song
                 if pd.notna(row["genres"]):
-                    genres = row["genres"].split(";")
-                    for genre_name in genres:
-                        genre_name = genre_name.strip()
-                        if not genre_name:
+                    # First split by semicolon (the main genre separator)
+                    genre_groups = row["genres"].split(";")
+                    for genre_group in genre_groups:
+                        genre_group = genre_group.strip()
+                        if not genre_group:
                             continue
                             
-                        # Check if genre exists in our map
-                        if genre_name not in genre_map:
-                            # Check if genre exists in database
-                            result = conn.execute(
-                                text("SELECT gid FROM genres WHERE genre_name = :genre_name"),
-                                {"genre_name": genre_name}
-                            )
-                            genre_id = result.scalar()
-                            
-                            # If genre doesn't exist, insert it
-                            if not genre_id:
-                                result = conn.execute(
-                                    text("INSERT INTO genres (genre_name) VALUES (:genre_name)"),
-                                    {"genre_name": genre_name}
-                                )
-                                # Get the ID of the newly inserted genre
+                        # Now split by comma to get individual genres
+                        individual_genres = genre_group.split(",")
+                        
+                        for genre_name in individual_genres:
+                            genre_name = genre_name.strip()
+                            if not genre_name:
+                                continue
+                                
+                            # Check if genre exists in our map
+                            if genre_name not in genre_map:
+                                # Check if genre exists in database
                                 result = conn.execute(
                                     text("SELECT gid FROM genres WHERE genre_name = :genre_name"),
                                     {"genre_name": genre_name}
                                 )
                                 genre_id = result.scalar()
+                                
+                                # If genre doesn't exist, insert it
+                                if not genre_id:
+                                    result = conn.execute(
+                                        text("INSERT INTO genres (genre_name) VALUES (:genre_name)"),
+                                        {"genre_name": genre_name}
+                                    )
+                                    # Get the ID of the newly inserted genre
+                                    result = conn.execute(
+                                        text("SELECT gid FROM genres WHERE genre_name = :genre_name"),
+                                        {"genre_name": genre_name}
+                                    )
+                                    genre_id = result.scalar()
+                                
+                                genre_map[genre_name] = genre_id
                             
-                            genre_map[genre_name] = genre_id
-                        
-                        # Insert into song_genres junction table
-                        conn.execute(
-                            text("INSERT INTO song_genres (sid, gid) VALUES (:sid, :gid)"),
-                            {"sid": str(row["id"]), "gid": genre_map[genre_name]}
-                        )
+                            # Insert into song_genres junction table
+                            conn.execute(
+                                text("INSERT INTO song_genres (sid, gid) VALUES (:sid, :gid)"),
+                                {"sid": str(row["id"]), "gid": genre_map[genre_name]}
+                            )
 
             print("✅ Songs table populated.")
             print("✅ Genres table populated.")

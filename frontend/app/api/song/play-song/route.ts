@@ -9,7 +9,13 @@ export async function GET(request: Request) {
   }
 
   try {
-    const res = await fetch(`http://localhost:8000/songs/fetch-song?sid=${songId}`);
+    const res = await fetch(`http://localhost:8000/songs/fetch-song?sid=${songId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
+      }
+    });
   
     if (!res.ok) {
       return NextResponse.json({ error: 'Failed to fetch song' }, { status: res.status });

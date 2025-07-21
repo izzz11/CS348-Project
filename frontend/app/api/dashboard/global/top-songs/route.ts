@@ -9,9 +9,10 @@ export async function GET() {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
       },
     });
-
+    
     if (!response.ok) {
       throw new Error(`Error fetching top songs: ${response.status}`);
     }

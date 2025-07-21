@@ -1,19 +1,28 @@
-uid	username	name	age	password	email	country
-u1	eloise	NULL	NULL	password	eloise@example.com	NULL
-u2	Amy	NULL	NULL	AmysPassword	amy@example.com	NULL
-sid	name	genre	artist	duration	audio_path	audio_download_path
-s1	Calm Waves	Ambient	DJ Ocean	180.5	/audio/calm.mp3	/download/calm.mp3
-sid	name	genre	artist	duration	audio_path	audio_download_path
-s1	Calm Waves	Ambient	DJ Ocean	180.5	/audio/calm.mp3	/download/calm.mp3
-sid	name	genre	artist	duration	audio_path	audio_download_path
-s1	Calm Waves	Ambient	DJ Ocean	180.5	/audio/calm.mp3	/download/calm.mp3
-sid	name	genre	artist	duration	audio_path	audio_download_path
-s1	Calm Waves	Ambient	DJ Ocean	180.5	/audio/calm.mp3	/download/calm.mp3
-sid	name	genre	artist	duration	audio_path	audio_download_path
-s1	Calm Waves	Ambient	DJ Ocean	180.5	/audio/calm.mp3	/download/calm.mp3
-pid	uid	name	description	private	shared_with
-p1	u1	My Chill Playlist	Relax and study	0	NULL
-pid	uid	name	description	private	shared_with
-p1	u1	My Chill Playlist	Relax and study	0	NULL
-sid	name	genre	artist	duration	audio_path	audio_download_path
-s1	Calm Waves	Ambient	DJ Ocean	180.5	/audio/calm.mp3	/download/calm.mp3
+uid	username	name	age	email	country
+u1	eloise	Eloise Li	25	eloise@example.com	Canada
+u2	amy	Amy Wang	30	amy@example.com	USA
+u3	chris	Chris Yu	28	chris@example.com	China
+total_duration_seconds
+780
+uid	sid	favourite	rating
+u1	sA	1	5
+uid	sid	last_listened
+u1	sA	2025-07-20 12:00:00
+u1	sB	2025-07-19 18:30:00
+recommended_uid	recommendation_type	confidence_score
+u3	genre_based	0.65
+pid	recommendation_reason	confidence_score
+p2	Matches your chill taste	0.7
+sid	name	artist	duration	audio_path	audio_download_path	genre
+sA	Ocean Breeze	DJ Wave	120	/audio/ocean.mp3	/download/ocean.mp3	Ambient; Chill
+sB	Sunset Glow	DJ Wave	180	/audio/sunset.mp3	/download/sunset.mp3	Electronic
+sid	name	artist	duration	audio_path	audio_download_path	genre
+sC	Night Sky	Star Gazer	240	/audio/night.mp3	/download/night.mp3	Ambient; Electronic; Chill
+sid	name	artist	duration	audio_path	audio_download_path	genre
+sA	Ocean Breeze	DJ Wave	120	/audio/ocean.mp3	/download/ocean.mp3	Ambient; Chill
+sid	name	artist	duration	audio_path	audio_download_path	genre
+sA	Ocean Breeze	DJ Wave	120	/audio/ocean.mp3	/download/ocean.mp3	Ambient; Chill
+sB	Sunset Glow	DJ Wave	180	/audio/sunset.mp3	/download/sunset.mp3	Electronic
+sid	name	artist	duration	audio_path	audio_download_path	genre
+sB	Sunset Glow	DJ Wave	180	/audio/sunset.mp3	/download/sunset.mp3	Electronic
+sC	Night Sky	Star Gazer	240	/audio/night.mp3	/download/night.mp3	Electronic

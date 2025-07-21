@@ -184,56 +184,17 @@ const RecommendationSection = () => {
         favoriteSongs = songDetails.filter(song => song !== null) as SongCardProps[];
       }
       
-      // Select 3 random songs from favorites, or max 3 if no favorites
+      // Select 3 random songs from favorites
       if (favoriteSongs.length > 0) {
         const shuffled = [...favoriteSongs].sort(() => 0.5 - Math.random());
         setGuessYourFavorite(shuffled.slice(0, Math.min(3, shuffled.length)));
       } else {
-        // Fallback to default songs if no favorites
-        setGuessYourFavorite([
-          {
-            id: '1',
-            title: 'Sunset Dreams',
-            artist: 'Chill Wave',
-            genre: 'Electronic'
-          },
-          {
-            id: '2',
-            title: 'Mountain High',
-            artist: 'Nature Sounds',
-            genre: 'Ambient'
-          },
-          {
-            id: '3',
-            title: 'Urban Rhythm',
-            artist: 'City Beats',
-            genre: 'Hip Hop'
-          }
-        ]);
+        // If no favorites, set empty array
+        setGuessYourFavorite([]);
       }
     } catch (error) {
       console.error('Error fetching favorites:', error);
-      // Fallback to default favorites
-      setGuessYourFavorite([
-        {
-          id: '1',
-          title: 'Sunset Dreams',
-          artist: 'Chill Wave',
-          genre: 'Electronic'
-        },
-        {
-          id: '2',
-          title: 'Mountain High',
-          artist: 'Nature Sounds',
-          genre: 'Ambient'
-        },
-        {
-          id: '3',
-          title: 'Urban Rhythm',
-          artist: 'City Beats',
-          genre: 'Hip Hop'
-        }
-      ]);
+      setGuessYourFavorite([]);
     }
   };
 
@@ -277,27 +238,7 @@ const RecommendationSection = () => {
       setRecommendedFromFavorites(transformedRecommendations.slice(0, 3));
     } catch (error) {
       console.error('Error fetching personalized recommendations:', error);
-      // Fallback to default recommendations
-      setRecommendedFromFavorites([
-        {
-          id: '4',
-          title: 'Jazz Nights',
-          artist: 'Smooth Operator',
-          genre: 'Jazz'
-        },
-        {
-          id: '5',
-          title: 'Rock Anthem',
-          artist: 'Power Chord',
-          genre: 'Rock'
-        },
-        {
-          id: '6',
-          title: 'Classical Morning',
-          artist: 'Symphony Orchestra',
-          genre: 'Classical'
-        }
-      ]);
+      setRecommendedFromFavorites([]);
     }
   };
 
@@ -320,8 +261,10 @@ const RecommendationSection = () => {
       try {
         setLoading(true);
         if (!user?.uid) {
-          // Show default recommendations for non-authenticated users
-          setDefaultRecommendations();
+          // Non-authenticated users get empty arrays
+          setGuessYourFavorite([]);
+          setRecommendedFromFavorites([]);
+          setRecommendedFromFriends([]);
           setLoading(false);
           return;
         }
@@ -334,76 +277,12 @@ const RecommendationSection = () => {
       } catch (err) {
         console.error('Error fetching data:', err);
         setError('Failed to load recommendations');
-        setDefaultRecommendations();
+        setGuessYourFavorite([]);
+        setRecommendedFromFavorites([]);
+        setRecommendedFromFriends([]);
       } finally {
         setLoading(false);
       }
-    };
-
-    // Set default recommendations for non-authenticated users
-    const setDefaultRecommendations = () => {
-      setGuessYourFavorite([
-        {
-          id: '1',
-          title: 'Sunset Dreams',
-          artist: 'Chill Wave',
-          genre: 'Electronic'
-        },
-        {
-          id: '2',
-          title: 'Mountain High',
-          artist: 'Nature Sounds',
-          genre: 'Ambient'
-        },
-        {
-          id: '3',
-          title: 'Urban Rhythm',
-          artist: 'City Beats',
-          genre: 'Hip Hop'
-        }
-      ]);
-      
-      setRecommendedFromFavorites([
-        {
-          id: '4',
-          title: 'Jazz Nights',
-          artist: 'Smooth Operator',
-          genre: 'Jazz'
-        },
-        {
-          id: '5',
-          title: 'Rock Anthem',
-          artist: 'Power Chord',
-          genre: 'Rock'
-        },
-        {
-          id: '6',
-          title: 'Classical Morning',
-          artist: 'Symphony Orchestra',
-          genre: 'Classical'
-        }
-      ]);
-      
-      setRecommendedFromFriends([
-        {
-          id: '7',
-          title: 'Ocean Waves',
-          artist: 'Deep Blue',
-          genre: 'Ambient'
-        },
-        {
-          id: '8',
-          title: 'Electric Dreams',
-          artist: 'Synth Master',
-          genre: 'Synthwave'
-        },
-        {
-          id: '9',
-          title: 'Midnight Drive',
-          artist: 'Night Cruiser',
-          genre: 'Electronic'
-        }
-      ]);
     };
     
     // Fetch friend recommendations
@@ -433,27 +312,7 @@ const RecommendationSection = () => {
         setRecommendedFromFriends(transformedRecommendations.slice(3, 6));
       } catch (error) {
         console.error('Error fetching friend recommendations:', error);
-        // Fallback to default friend recommendations
-        setRecommendedFromFriends([
-          {
-            id: '7',
-            title: 'Ocean Waves',
-            artist: 'Deep Blue',
-            genre: 'Ambient'
-          },
-          {
-            id: '8',
-            title: 'Electric Dreams',
-            artist: 'Synth Master',
-            genre: 'Synthwave'
-          },
-          {
-            id: '9',
-            title: 'Midnight Drive',
-            artist: 'Night Cruiser',
-            genre: 'Electronic'
-          }
-        ]);
+        setRecommendedFromFriends([]);
       }
     };
 
@@ -696,6 +555,7 @@ const DashboardPreview = () => {
         const songsResponse = await fetch('/api/dashboard/global/top-songs');
         if (!songsResponse.ok) throw new Error('Failed to fetch top songs');
         const songsData = await songsResponse.json();
+        
         setTopSongs(songsData);
         
         // Fetch top artists

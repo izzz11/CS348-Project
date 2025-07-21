@@ -2,7 +2,7 @@
 from fastapi import APIRouter, HTTPException, status, Query
 from database.utils import song_repo
 from database.schema import models
-from typing import List
+from typing import List, Optional
 
 
 router = APIRouter(prefix="/songs", tags=["songs"])
@@ -33,7 +33,7 @@ def fetch_all_songs():
 def fetch_paginated_filtered(
     page: int = Query(1),
     page_size: int = Query(10),
-    search: str | None = Query(None)
+    search: Optional[str] = Query(None)
 ):
     rows = song_repo.get_song_paginated_filtered(page, page_size, search)
     return [
