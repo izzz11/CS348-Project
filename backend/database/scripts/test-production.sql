@@ -157,79 +157,10 @@ ORDER BY uta.last_listened DESC;
 -- SONG FETCH TEST STATEMENTS
 SELECT * FROM songs LIMIT 10;
 
+SELECT * FROM songs WHERE genre = 'Ambient' LIMIT 10;
+
 SELECT * FROM songs WHERE artist = 'Grace Kelly' LIMIT 10;
 
 SELECT * FROM songs WHERE name LIKE '%Calm%' LIMIT 10;
 
 SELECT * FROM songs WHERE duration <= 200 LIMIT 10;
-
--- ─────────────────────────────────────────────
--- 8) TEST: Paginated & Filtered Songs (no filter, page=1, size=5)
-SELECT s.*,
-       GROUP_CONCAT(g.genre_name SEPARATOR '; ') AS genre
-FROM songs AS s
-LEFT JOIN song_genres AS sg ON s.sid = sg.sid
-LEFT JOIN genres      AS g  ON sg.gid = g.gid
-GROUP BY s.sid
-ORDER BY s.sid
-LIMIT 5
-OFFSET 0;
-
--- 9) TEST: Paginated & Filtered Songs (search="Grimoff", page=1, size=5)
-SELECT s.*,
-       GROUP_CONCAT(g.genre_name SEPARATOR '; ') AS genre
-FROM songs AS s
-LEFT JOIN song_genres AS sg ON s.sid = sg.sid
-LEFT JOIN genres      AS g  ON sg.gid = g.gid
-WHERE s.name   LIKE '%Grimoff%'
-   OR s.artist LIKE '%Grimoff%'
-   OR g.genre_name LIKE '%Grimoff%'
-GROUP BY s.sid
-ORDER BY s.sid
-LIMIT 5
-OFFSET 0;
-
--- ─────────────────────────────────────────────
--- 10) TEST: Get Song Recommendations for u1 (GET /matching/recommendations/songs/{uid})
--- Should return top N songs based on whatever your logic is; here we just sanity‐check the join
-SELECT rec.sid, s.name, s.artist, rec.confidence_score
-FROM song_recommendations AS rec
-JOIN songs AS s ON rec.sid = s.sid
-WHERE rec.uid = 'u1'
-ORDER BY rec.confidence_score DESC
-LIMIT 5;
-
--- ─────────────────────────────────────────────
--- 11) TEST: Get User Recommendations for u1 (GET /matching/recommendations/users/{uid})
-SELECT recommended_uid, recommendation_type, confidence_score
-FROM user_recommendations
-WHERE uid = 'u1'
-ORDER BY confidence_score DESC
-LIMIT 5;
-
--- ─────────────────────────────────────────────
--- 12) TEST: Global Dashboard – Top Songs (GET /dashboard/global/top-songs)
-SELECT s.sid, s.name, s.artist, SUM(uta.total_plays) AS total_plays
-FROM user_track_actions AS uta
-JOIN songs AS s ON uta.sid = s.sid
-GROUP BY s.sid, s.name, s.artist
-ORDER BY total_plays DESC
-LIMIT 10;
-
--- 13) TEST: Global Dashboard – Top Artists (GET /dashboard/global/top-artists)
-SELECT s.artist, SUM(uta.total_plays) AS total_plays
-FROM user_track_actions AS uta
-JOIN songs AS s ON uta.sid = s.sid
-GROUP BY s.artist
-ORDER BY total_plays DESC
-LIMIT 10;
-
--- 14) TEST: Global Dashboard – Top Genres (GET /dashboard/global/top-genres)
-SELECT g.genre_name,
-       SUM(uta.total_plays) AS total_plays
-FROM user_track_actions AS uta
-JOIN song_genres     AS sg ON uta.sid = sg.sid
-JOIN genres          AS g  ON sg.gid = g.gid
-GROUP BY g.genre_name
-ORDER BY total_plays DESC
-LIMIT 10;
