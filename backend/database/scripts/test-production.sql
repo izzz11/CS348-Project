@@ -1,166 +1,163 @@
-USE musicdb;
--- We first insert some test data into the database so that we can test the functionality of the production database of songs.
 -- ─────────────────────────────────────────────
--- USERS
-INSERT IGNORE INTO users (uid, username, password, email, name, age, country) VALUES
-('u1', 'eloise', 'password1', 'eloise@example.com', 'Eloise Kim', 22, 'Canada'),
-('u2', 'amy', 'password2', 'amy@example.com', 'Amy Smith', 25, 'USA'),
-('u3', 'liam', 'password3', 'liam@example.com', 'Liam Chen', 28, 'UK'),
-('u4', 'emma', 'password4', 'emma@example.com', 'Emma Zhao', 31, 'Australia'),
-('u5', 'noah', 'password5', 'noah@example.com', 'Noah Patel', 27, 'India'),
-('u6', 'olivia', 'password6', 'olivia@example.com', 'Olivia Singh', 24, 'Canada'),
-('u7', 'ethan', 'password7', 'ethan@example.com', 'Ethan Garcia', 30, 'Mexico'),
-('u8', 'ava', 'password8', 'ava@example.com', 'Ava Nguyen', 23, 'Vietnam'),
-('u9', 'mason', 'password9', 'mason@example.com', 'Mason Dubois', 29, 'France'),
-('u10', 'mia', 'password10', 'mia@example.com', 'Mia Müller', 26, 'Germany');
-
--- TEST USERS
-SELECT * FROM users;
+-- FEATURE: User Track Actions  
+-- Using production song IDs for non-zero listening time
+INSERT IGNORE INTO user_track_actions (uid, sid, last_listened, total_plays, favourite, rating) VALUES  
+  ('u1', '1009672', '2025-07-28 12:00:00', 5, TRUE, 5),  
+  ('u1', '1012294', '2025-07-29 08:30:00', 2, FALSE, 3),  
+  ('u2', '1009672', '2025-07-28 15:45:00', 3, TRUE, 4);
 
 -- ─────────────────────────────────────────────
--- PLAYLISTS
-INSERT IGNORE INTO playlists (pid, name, description, private) VALUES
-('p1', 'Chill Mix', 'Relax and study vibes', FALSE),
-('p2', 'Workout Boost', 'Pump-up jams', TRUE),
-('p3', 'Morning Jazz', 'Coffee and jazz to start the day', FALSE),
-('p4', 'Top EDM', 'Most streamed electronic hits', TRUE),
-('p5', 'Focus Flow', 'For deep work sessions', FALSE),
-('p6', 'Global Beats', 'Hits from around the world', FALSE);
-
--- TEST PLAYLISTS
-SELECT * FROM playlists;
+-- FEATURE: Songs  
+-- Songs have been inserted into our database in advance.
 
 -- ─────────────────────────────────────────────
--- USER_PLAYLISTS
-INSERT IGNORE INTO user_playlists (uid, pid, is_favourite) VALUES
-('u1', 'p1', TRUE),
-('u2', 'p2', FALSE),
-('u3', 'p3', TRUE),
-('u4', 'p4', FALSE),
-('u5', 'p5', TRUE),
-('u6', 'p6', FALSE);
-
--- TEST USER-PLAYLIST CONNECTIONS
-SELECT u.username, p.name AS playlist, up.is_favourite
-FROM user_playlists up
-JOIN users u ON up.uid = u.uid
-JOIN playlists p ON up.pid = p.pid;
+-- FEATURE: Song Genres  
+INSERT IGNORE INTO song_genres (sid, gid)  
+  SELECT 's1', gid FROM genres WHERE genre_name = 'Pop'  
+UNION ALL SELECT 's2', gid FROM genres WHERE genre_name = 'Rock'  
+UNION ALL SELECT 's3', gid FROM genres WHERE genre_name = 'Jazz'  
+UNION ALL SELECT 's4', gid FROM genres WHERE genre_name = 'Classical'  
+UNION ALL SELECT 's5', gid FROM genres WHERE genre_name = 'Pop'  
+UNION ALL SELECT 's6', gid FROM genres WHERE genre_name = 'Electronic';
 
 -- ─────────────────────────────────────────────
--- PLAYLIST_SONGS
-INSERT INTO playlist_songs (pid, sid)
-SELECT 'p1', sid FROM (
-    SELECT sid FROM songs ORDER BY sid LIMIT 3 OFFSET 0
-) AS sub
-WHERE NOT EXISTS (
-    SELECT 1 FROM playlist_songs WHERE pid = 'p1' AND sid = sub.sid
-);
+-- FEATURE: Users  
+INSERT IGNORE INTO users (uid, username, password, email, name, age, country) VALUES  
+  ('u1', 'eloise', 'password1', 'eloise@example.com', 'Eloise Kim', 22, 'Canada'),  
+  ('u2', 'amy', 'password2', 'amy@example.com', 'Amy Smith', 25, 'USA'),  
+  ('u3', 'liam', 'password3', 'liam@example.com', 'Liam Chen', 28, 'UK');
 
-INSERT INTO playlist_songs (pid, sid)
-SELECT 'p2', sid FROM (
-    SELECT sid FROM songs ORDER BY sid LIMIT 3 OFFSET 3
-) AS sub
-WHERE NOT EXISTS (
-    SELECT 1 FROM playlist_songs WHERE pid = 'p2' AND sid = sub.sid
-);
+-- ─────────────────────────────────────────────
+-- FEATURE: Playlists  
+INSERT IGNORE INTO playlists (pid, name, description, private) VALUES  
+  ('p1', 'Chill Mix', 'Relaxing tunes', FALSE),  
+  ('p2', 'Workout Mix', 'Pump up tracks', TRUE);
 
-INSERT INTO playlist_songs (pid, sid)
-SELECT 'p3', sid FROM (
-    SELECT sid FROM songs ORDER BY sid LIMIT 3 OFFSET 6
-) AS sub
-WHERE NOT EXISTS (
-    SELECT 1 FROM playlist_songs WHERE pid = 'p3' AND sid = sub.sid
-);
+-- ─────────────────────────────────────────────
+-- FEATURE: User Playlists  
+INSERT IGNORE INTO user_playlists (uid, pid, is_favourite) VALUES  
+  ('u1', 'p1', TRUE),  
+  ('u2', 'p2', FALSE);
 
-INSERT INTO playlist_songs (pid, sid)
-SELECT 'p4', sid FROM (
-    SELECT sid FROM songs ORDER BY sid LIMIT 3 OFFSET 9
-) AS sub
-WHERE NOT EXISTS (
-    SELECT 1 FROM playlist_songs WHERE pid = 'p4' AND sid = sub.sid
-);
+-- ─────────────────────────────────────────────
+-- FEATURE: Playlist Songs  
+INSERT IGNORE INTO playlist_songs (pid, sid) VALUES  
+  ('p1', 's1'),  
+  ('p1', 's3'),  
+  ('p2', 's2');
 
-INSERT INTO playlist_songs (pid, sid)
-SELECT 'p5', sid FROM (
-    SELECT sid FROM songs ORDER BY sid LIMIT 3 OFFSET 12
-) AS sub
-WHERE NOT EXISTS (
-    SELECT 1 FROM playlist_songs WHERE pid = 'p5' AND sid = sub.sid
-);
+-- ─────────────────────────────────────────────
+-- FEATURE: User Track Actions  
+INSERT IGNORE INTO user_track_actions (uid, sid, last_listened, total_plays, favourite, rating) VALUES  
+  ('u1', 's1', '2025-07-28 12:00:00', 5, TRUE, 5),  
+  ('u1', 's3', '2025-07-29 08:30:00', 2, FALSE, 3),  
+  ('u2', 's2', '2025-07-28 15:45:00', 3, TRUE, 4);
 
-INSERT INTO playlist_songs (pid, sid)
-SELECT 'p6', sid FROM (
-    SELECT sid FROM songs ORDER BY sid LIMIT 3 OFFSET 15
-) AS sub
-WHERE NOT EXISTS (
-    SELECT 1 FROM playlist_songs WHERE pid = 'p6' AND sid = sub.sid
-);
+-- ─────────────────────────────────────────────
+-- FEATURE: Matching System  
+INSERT IGNORE INTO user_matches (user1_id, user2_id, similarity_score, matched, liked_by_user1, liked_by_user2) VALUES  
+  ('u1', 'u2', 0.75, FALSE, TRUE, FALSE),  
+  ('u2', 'u1', 0.75, FALSE, FALSE, TRUE);
 
--- TEST SONGS IN PLAYLISTS
-SELECT p.name AS playlist, s.name AS song, s.artist
+-- Re-enable foreign key checks after data load
+SET FOREIGN_KEY_CHECKS=1;
+
+-- ─────────────────────────────────────────────
+-- FEATURE: TEST QUERIES BASIC  
+-- Fetch all users
+SELECT * FROM users;  
+-- Fetch all songs
+SELECT * FROM songs;  
+-- Fetch playlists for u1 (via user_playlists)
+SELECT p.*
+FROM playlists p
+JOIN user_playlists up ON p.pid = up.pid
+WHERE up.uid = 'u1';
+-- Fetch songs in p1
+SELECT s.*
+FROM songs s
+JOIN playlist_songs ps ON s.sid = ps.sid
+WHERE ps.pid = 'p1';
+-- Fetch favorites for u1
+SELECT * FROM user_track_actions WHERE uid = 'u1' AND favourite = TRUE;
+-- Fetch matches for u1
+SELECT * FROM user_matches WHERE user1_id = 'u1';
+
+-- ─────────────────────────────────────────────
+-- ADVANCED FEATURE TESTS
+
+-- 1. Recently Played Songs (History)
+SELECT s.*
+FROM songs s
+JOIN user_track_actions t ON s.sid = t.sid
+WHERE t.uid = 'u1' AND t.last_listened IS NOT NULL
+ORDER BY t.last_listened DESC
+LIMIT 5;
+
+-- 2. Global Dashboard: Top Songs
+SELECT s.sid, s.name, s.artist, SUM(t.total_plays) AS plays
+FROM songs s
+JOIN user_track_actions t ON s.sid = t.sid
+GROUP BY s.sid, s.name, s.artist
+ORDER BY plays DESC
+LIMIT 3;
+
+-- 3. User Analytics Dashboard: total listening time & favorites
+-- Total listening seconds for u1
+SELECT COALESCE(SUM(s.duration * t.total_plays), 0) AS total_listening_seconds
+FROM user_track_actions t
+JOIN songs s ON t.sid = s.sid
+WHERE t.uid = 'u1';
+-- Number of playlists for u1
+SELECT COUNT(*) AS total_playlists
+FROM user_playlists
+WHERE uid = 'u1';
+-- Number of favorite songs for u1
+SELECT COUNT(*) AS favorite_songs
+FROM user_track_actions
+WHERE uid = 'u1' AND favourite = TRUE;
+-- Top 3 favorite genres for u1
+SELECT g.genre_name, COUNT(*) AS cnt
+FROM user_track_actions t
+JOIN song_genres sg ON t.sid = sg.sid
+JOIN genres g ON sg.gid = g.gid
+WHERE t.uid = 'u1' AND t.favourite = TRUE
+GROUP BY g.genre_name
+ORDER BY cnt DESC
+LIMIT 3;
+
+-- 4. Active Playlist Listeners Test (inline aggregate)
+SELECT ps.pid, u.username, SUM(t.total_plays) AS total_listens
 FROM playlist_songs ps
-JOIN playlists p ON ps.pid = p.pid
-JOIN songs s ON ps.sid = s.sid
-ORDER BY ps.pid, ps.added_at;
+JOIN user_track_actions t ON ps.sid = t.sid
+JOIN users u ON t.uid = u.uid
+GROUP BY ps.pid, u.username;
 
--- ─────────────────────────────────────────────
--- USER TRACK ACTIONS
--- u1 track action
-INSERT INTO user_track_actions (uid, sid, last_listened, total_plays, favourite, rating)
-SELECT 'u1', sid, NOW(), 12, TRUE, 5
-FROM (SELECT sid FROM songs ORDER BY sid LIMIT 1 OFFSET 0) AS sub
-WHERE NOT EXISTS (
-    SELECT 1 FROM user_track_actions WHERE uid = 'u1' AND sid = sub.sid
-);
+-- 5. Transactional "Favourite a Song"
+START TRANSACTION;
+UPDATE user_track_actions
+SET favourite = TRUE
+WHERE uid = 'u1' AND sid = 's2';
+INSERT IGNORE INTO playlist_songs (pid, sid)
+VALUES ('p1', 's2');
+COMMIT;
+-- Verify
+SELECT * FROM user_track_actions WHERE uid='u1' AND sid='s2';
+SELECT * FROM playlist_songs WHERE pid='p1' AND sid='s2';
 
--- u2
-INSERT INTO user_track_actions (uid, sid, last_listened, total_plays, favourite, rating)
-SELECT 'u2', sid, NOW(), 6, FALSE, 4
-FROM (SELECT sid FROM songs ORDER BY sid LIMIT 1 OFFSET 3) AS sub
-WHERE NOT EXISTS (
-    SELECT 1 FROM user_track_actions WHERE uid = 'u2' AND sid = sub.sid
-);
+-- 6. Paginated Song Retrieval
+SELECT s.sid, s.name, GROUP_CONCAT(g.genre_name SEPARATOR '; ') AS genres
+FROM songs s
+LEFT JOIN song_genres sg ON s.sid = sg.sid
+LEFT JOIN genres g ON sg.gid = g.gid
+GROUP BY s.sid
+ORDER BY s.sid
+LIMIT 2 OFFSET 1;
 
--- u3
-INSERT INTO user_track_actions (uid, sid, last_listened, total_plays, favourite, rating)
-SELECT 'u3', sid, NOW(), 8, TRUE, 5
-FROM (SELECT sid FROM songs ORDER BY sid LIMIT 1 OFFSET 6) AS sub
-WHERE NOT EXISTS (
-    SELECT 1 FROM user_track_actions WHERE uid = 'u3' AND sid = sub.sid
-);
+-- 7. Match Users by Taste
+SELECT um.user2_id AS candidate_uid, u.username, um.similarity_score
+FROM user_matches um
+JOIN users u ON um.user2_id = u.uid
+WHERE um.user1_id = 'u1' AND um.matched = FALSE;
 
--- u4
-INSERT INTO user_track_actions (uid, sid, last_listened, total_plays, favourite, rating)
-SELECT 'u4', sid, NOW(), 3, FALSE, 3
-FROM (SELECT sid FROM songs ORDER BY sid LIMIT 1 OFFSET 9) AS sub
-WHERE NOT EXISTS (
-    SELECT 1 FROM user_track_actions WHERE uid = 'u4' AND sid = sub.sid
-);
-
--- u5
-INSERT INTO user_track_actions (uid, sid, last_listened, total_plays, favourite, rating)
-SELECT 'u5', sid, NOW(), 14, TRUE, 4
-FROM (SELECT sid FROM songs ORDER BY sid LIMIT 1 OFFSET 12) AS sub
-WHERE NOT EXISTS (
-    SELECT 1 FROM user_track_actions WHERE uid = 'u5' AND sid = sub.sid
-);
-
-
--- TEST TRACK ACTIONS
-SELECT u.username, s.name AS song_name, uta.total_plays, uta.favourite, uta.rating
-FROM user_track_actions uta
-JOIN users u ON uta.uid = u.uid
-JOIN songs s ON uta.sid = s.sid
-ORDER BY uta.last_listened DESC;
-
--- ─────────────────────────────────────────────
--- SONG FETCH TEST STATEMENTS
-SELECT * FROM songs LIMIT 10;
-
-SELECT * FROM songs WHERE genre = 'Ambient' LIMIT 10;
-
-SELECT * FROM songs WHERE artist = 'Grace Kelly' LIMIT 10;
-
-SELECT * FROM songs WHERE name LIKE '%Calm%' LIMIT 10;
-
-SELECT * FROM songs WHERE duration <= 200 LIMIT 10;
+-- END OF TEST-SAMPLE.SQL
